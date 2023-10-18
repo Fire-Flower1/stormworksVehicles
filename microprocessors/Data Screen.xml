@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Data Screen" description="No description set." width="3" length="4" id_counter="61" id_counter_node="13" sym1="29298" sym2="35466" sym3="35466" sym4="35466" sym5="35466" sym6="35466" sym7="35466" sym8="35466" sym9="35466" sym10="35466" sym11="35466" sym12="35466" sym13="29298">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="RPS" mode="1" type="1" description="The input signal to be processed."/>
+		</n>
+		<n id="2" component_id="4">
+			<node label="Temp" mode="1" type="1" description="The input signal to be processed.">
+				<position x="2" z="1"/>
+			</node>
+		</n>
+		<n id="3" component_id="6">
+			<node label="Generator 1" mode="1" type="1" description="The input signal to be processed.">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="4" component_id="8">
+			<node label="Generator 2" mode="1" type="1" description="The input signal to be processed.">
+				<position x="1" z="1"/>
+			</node>
+		</n>
+		<n id="5" component_id="10">
+			<node label="Throttle" mode="1" type="1" description="The input signal to be processed.">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="6" component_id="13">
+			<node label="Battery" mode="1" type="1" description="The input signal to be processed.">
+				<position z="1"/>
+			</node>
+		</n>
+		<n id="7" component_id="15">
+			<node label="Fuel" mode="1" type="1" description="The input signal to be processed.">
+				<position z="2"/>
+			</node>
+		</n>
+		<n id="8" component_id="18">
+			<node label="Video Out" type="6" description="The input signal to be processed.">
+				<position x="1" z="2"/>
+			</node>
+		</n>
+		<n id="12" component_id="40">
+			<node label="Screen Up" mode="1" description="The input signal to be processed.">
+				<position x="2" z="2"/>
+			</node>
+		</n>
+		<n id="13" component_id="41">
+			<node label="Screen Down" mode="1" description="The input signal to be processed.">
+				<position z="3"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="40">
+				<object id="19" count="8">
+					<pos x="-0.5" y="-1.5"/>
+					<in1 component_id="15" v="180.737549"/>
+					<in2 component_id="13" v="1"/>
+					<in3 component_id="10"/>
+					<in4 component_id="8" v="0.000769"/>
+					<in5 component_id="6"/>
+					<in6 component_id="4" v="4.56142"/>
+					<in7 component_id="2"/>
+					<in8 component_id="44" v="1"/>
+					<out1>
+						<v 01="180.737549" 02="1" 04="0.000769" 06="4.56142" 08="1"/>
+					</out1>
+				</object>
+			</c>
+			<c type="56">
+				<object id="20" script='-- Define the electricScreen and placeholderScreen functions
+function electricScreen(params)
+    local Battery, Generator1, Generator2 = params.Battery, params.Generator1, params.Generator2
+    screen.setColor(255, 229, 99)
+    screen.drawClear()
+    screen.setColor(0, 0, 0)
+    screen.drawTextBox(1, 5, w, 6, "Electrical Screen", 0, 0)
+    screen.drawTextBox(1, 25, w, 6, "Battery: " .. string.format("%.2f", Battery), 0, 0)
+    screen.drawTextBox(1, 40, w, 6, "Generator 1: " .. string.format("%.2f",Generator1), 0, 0)
+    screen.drawTextBox(1, 55, w, 6, "Generator 2: " .. string.format("%.2f",Generator2), 0, 0)
+    -- You can use Battery, Generator1, and Generator2 here as needed
+end
+
+function placeholderScreen(params)
+    screen.setColor(0, 229, 99)
+    screen.drawClear()
+    screen.setColor(0, 0, 0)
+    screen.drawTextBox(1, 5, w, 6, "PlaceHolder Screen", 0, 0)
+    -- You can use parameters specific to this screen here as needed
+end
+
+-- Initialize the screens table (to be updated in onTick)
+screens = {}
+
+-- Tick function that will be executed every logic tick
+function onTick()
+    Fuel = input.getNumber(1)
+    Battery = input.getNumber(2)
+    Throttle = input.getNumber(3)
+    Generator2 = input.getNumber(4)
+    Generator1 = input.getNumber(5)
+    Temp = input.getNumber(6)
+    RPS = input.getNumber(7)
+    currentScreen = input.getNumber(8)
+    
+    -- Update the screens table with the current parameters
+    screens = {
+        {func = electricScreen, params = {Battery = Battery, Generator1 = Generator1, Generator2 = Generator2}},
+        {func = placeholderScreen, params = {}},  -- You can add parameters here if needed
+    }
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+    w = screen.getWidth()
+    h = screen.getHeight()
+    
+    -- Call the appropriate screen function based on the currentScreen index
+    local screenData = screens[currentScreen]
+    if screenData then
+        screenData.func(screenData.params)
+    end
+end
+'>
+					<pos x="1.5" y="-0.75"/>
+					<in1 component_id="19">
+						<v 01="180.737549" 02="1" 04="0.000772" 06="4.560836" 08="1"/>
+					</in1>
+				</object>
+			</c>
+			<c type="37">
+				<object id="44" m="1" is="true">
+					<pos x="-2.5" y="1.25"/>
+					<in1 component_id="48"/>
+					<in2 component_id="47"/>
+					<out1 v="1"/>
+					<r text="1" value="1"/>
+					<i text="1" value="1"/>
+					<min text="1" value="1"/>
+					<max text="7" value="7"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="47">
+					<pos x="-5.25" y="2.25"/>
+					<in1 component_id="41"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="48">
+					<pos x="-5.25" y="1.5"/>
+					<in1 component_id="40"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="2">
+				<object id="2">
+					<pos x="-2.5" y="-2.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="4">
+					<pos x="-2.5" y="-1.75"/>
+					<in1 v="4.56142"/>
+					<out1 v="4.56142"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="6">
+					<pos x="-2.5" y="-1.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="8">
+					<pos x="-2.5" y="-0.75"/>
+					<in1 v="0.000769"/>
+					<out1 v="0.000769"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="10">
+					<pos x="-2.5" y="-0.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="13">
+					<pos x="-2.5" y="0.25"/>
+					<in1 v="1"/>
+					<out1 v="1"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="15">
+					<pos x="-2.5" y="0.75"/>
+					<in1 v="180.737549"/>
+					<out1 v="180.737549"/>
+				</object>
+			</c>
+			<c type="7">
+				<object id="18">
+					<pos x="3" y="-0.75"/>
+					<in1 component_id="20" node_index="1"/>
+				</object>
+			</c>
+			<c>
+				<object id="40">
+					<pos x="-6.25" y="1.5"/>
+				</object>
+			</c>
+			<c>
+				<object id="41">
+					<pos x="-6.25" y="2.25"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="19" count="8">
+				<pos x="-0.5" y="-1.5"/>
+				<in1 component_id="15" v="180.737549"/>
+				<in2 component_id="13" v="1"/>
+				<in3 component_id="10"/>
+				<in4 component_id="8" v="0.000769"/>
+				<in5 component_id="6"/>
+				<in6 component_id="4" v="4.56142"/>
+				<in7 component_id="2"/>
+				<in8 component_id="44" v="1"/>
+				<out1>
+					<v 01="180.737549" 02="1" 04="0.000769" 06="4.56142" 08="1"/>
+				</out1>
+			</c0>
+			<c1 id="20" script='-- Define the electricScreen and placeholderScreen functions
+function electricScreen(params)
+    local Battery, Generator1, Generator2 = params.Battery, params.Generator1, params.Generator2
+    screen.setColor(255, 229, 99)
+    screen.drawClear()
+    screen.setColor(0, 0, 0)
+    screen.drawTextBox(1, 5, w, 6, "Electrical Screen", 0, 0)
+    screen.drawTextBox(1, 25, w, 6, "Battery: " .. string.format("%.2f", Battery), 0, 0)
+    screen.drawTextBox(1, 40, w, 6, "Generator 1: " .. string.format("%.2f",Generator1), 0, 0)
+    screen.drawTextBox(1, 55, w, 6, "Generator 2: " .. string.format("%.2f",Generator2), 0, 0)
+    -- You can use Battery, Generator1, and Generator2 here as needed
+end
+
+function placeholderScreen(params)
+    screen.setColor(0, 229, 99)
+    screen.drawClear()
+    screen.setColor(0, 0, 0)
+    screen.drawTextBox(1, 5, w, 6, "PlaceHolder Screen", 0, 0)
+    -- You can use parameters specific to this screen here as needed
+end
+
+-- Initialize the screens table (to be updated in onTick)
+screens = {}
+
+-- Tick function that will be executed every logic tick
+function onTick()
+    Fuel = input.getNumber(1)
+    Battery = input.getNumber(2)
+    Throttle = input.getNumber(3)
+    Generator2 = input.getNumber(4)
+    Generator1 = input.getNumber(5)
+    Temp = input.getNumber(6)
+    RPS = input.getNumber(7)
+    currentScreen = input.getNumber(8)
+    
+    -- Update the screens table with the current parameters
+    screens = {
+        {func = electricScreen, params = {Battery = Battery, Generator1 = Generator1, Generator2 = Generator2}},
+        {func = placeholderScreen, params = {}},  -- You can add parameters here if needed
+    }
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+    w = screen.getWidth()
+    h = screen.getHeight()
+    
+    -- Call the appropriate screen function based on the currentScreen index
+    local screenData = screens[currentScreen]
+    if screenData then
+        screenData.func(screenData.params)
+    end
+end
+'>
+				<pos x="1.5" y="-0.75"/>
+				<in1 component_id="19">
+					<v 01="180.737549" 02="1" 04="0.000772" 06="4.560836" 08="1"/>
+				</in1>
+			</c1>
+			<c2 id="44" m="1" is="true">
+				<pos x="-2.5" y="1.25"/>
+				<in1 component_id="48"/>
+				<in2 component_id="47"/>
+				<out1 v="1"/>
+				<r text="1" value="1"/>
+				<i text="1" value="1"/>
+				<min text="1" value="1"/>
+				<max text="7" value="7"/>
+			</c2>
+			<c3 id="47">
+				<pos x="-5.25" y="2.25"/>
+				<in1 component_id="41"/>
+			</c3>
+			<c4 id="48">
+				<pos x="-5.25" y="1.5"/>
+				<in1 component_id="40"/>
+			</c4>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="-2.5" y="-2.25"/>
+			</c0>
+			<c1 id="4">
+				<pos x="-2.5" y="-1.75"/>
+				<in1 v="4.56142"/>
+				<out1 v="4.56142"/>
+			</c1>
+			<c2 id="6">
+				<pos x="-2.5" y="-1.25"/>
+			</c2>
+			<c3 id="8">
+				<pos x="-2.5" y="-0.75"/>
+				<in1 v="0.000769"/>
+				<out1 v="0.000769"/>
+			</c3>
+			<c4 id="10">
+				<pos x="-2.5" y="-0.25"/>
+			</c4>
+			<c5 id="13">
+				<pos x="-2.5" y="0.25"/>
+				<in1 v="1"/>
+				<out1 v="1"/>
+			</c5>
+			<c6 id="15">
+				<pos x="-2.5" y="0.75"/>
+				<in1 v="180.737549"/>
+				<out1 v="180.737549"/>
+			</c6>
+			<c7 id="18">
+				<pos x="3" y="-0.75"/>
+				<in1 component_id="20" node_index="1"/>
+			</c7>
+			<c8 id="40">
+				<pos x="-6.25" y="1.5"/>
+			</c8>
+			<c9 id="41">
+				<pos x="-6.25" y="2.25"/>
+			</c9>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

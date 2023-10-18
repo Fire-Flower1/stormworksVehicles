@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="ACTIVE PING SONAR" description="by Amiga87'" width="3" length="3" id_counter="81" id_counter_node="7" sym1="4064" sym2="4112" sym3="10184" sym4="18468" sym5="5008" sym6="1088" sym7="256" sym9="16376" sym11="13482" sym12="8334" sym13="4490" sym14="12686">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="Sonar Input" mode="1" type="5" description="The input signal to be processed."/>
+		</n>
+		<n id="2" component_id="4">
+			<node label="Console Input" mode="1" type="5" description="1: Sonar On | 2: Range Up | 3: Range Down">
+				<position z="1"/>
+			</node>
+		</n>
+		<n id="3" component_id="6">
+			<node label="Sonar ON" description="The input signal to be processed.">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="4" component_id="8">
+			<node label="Ping" description="The input signal to be processed.">
+				<position x="1" z="1"/>
+			</node>
+		</n>
+		<n id="5" component_id="13">
+			<node label="Display" type="6" description="The input signal to be processed.">
+				<position x="2" z="1"/>
+			</node>
+		</n>
+		<n id="6" component_id="63">
+			<node label="Debug (Do not connect)" type="5" description="x: Target[x] Azimuth | 32: Target count">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="7" component_id="66">
+			<node label="Console Output" type="5" description="The input signal to be processed.">
+				<position z="2"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data type="16448">
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="29">
+				<object id="14">
+					<pos x="2.25" y="-1"/>
+					<in1 component_id="4"/>
+				</object>
+			</c>
+			<c type="56">
+				<object id="17" script="TargetTime = {}
+TargetAzimuth = {}
+TargetElevation = {}
+counter = 0
+Range = 2000
+PingDelay = 0
+TargetCount = 0
+TargetRedundancy = {}
+function onTick()
+	counter = counter+1
+	
+	output.setBool(1, false)
+	if(counter &gt; PingDelay)
+	then
+		counter = 0
+		output.setNumber(32,TargetCount)
+		TargetCount = 0
+		output.setBool(1, true)
+		Range = input.getNumber(32)
+	end
+	
+	for i = 1,8,1
+	do
+		if(input.getBool(i) == true and TargetRedundancy[i] == false)
+		then
+			TargetCount = TargetCount + 1
+			TargetRedundancy[i] = true
+			TargetTime[TargetCount] = counter
+		    TargetAzimuth[TargetCount] = input.getNumber((i*2)-1)
+		    TargetElevation[TargetCount] = input.getNumber(i*2)
+			output.setNumber(TargetCount, TargetAzimuth[TargetCount])
+			
+		else
+			TargetRedundancy[i] = false
+		end
+		
+	end
+	
+end
+
+
+function onDraw()
+	w = screen.getWidth()/2			  
+	h = screen.getHeight()/2		
+	scale = (w-2)/Range
+	PingDelay = Range*120/1480
+	
+	screen.setColor(0, 100, 0)			 
+	screen.drawCircle(w, h, 1480*counter*scale/120)
+	if(TargetCount &gt; 0)
+	then
+		for i = 1,TargetCount,1 
+		do 
+			d = 1480*TargetTime[i]/120
+			hd = d*math.cos(6.28*TargetElevation[i])
+			pos = hd*scale
+			if(TargetElevation[i]&lt;0)
+			then
+				screen.setColor(255, 255, 255)
+			else
+				screen.setColor(50, 50, 50)
+			end
+			screen.drawRect(pos*math.cos(6.28*TargetAzimuth[i]-1.57)+w, pos*math.sin(6.28*TargetAzimuth[i]-1.57)+w, 1, 1)
+		end
+	end
+end">
+					<pos x="0.75" y="0.5"/>
+					<in1 component_id="19"/>
+					<in2 component_id="81" node_index="1"/>
+				</object>
+			</c>
+			<c type="40">
+				<object id="19" count="1" offset="31">
+					<pos x="-0.5" y="0.5"/>
+					<inc component_id="2"/>
+					<in1 component_id="73"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="24">
+					<pos x="2.25" y="-0.5"/>
+					<in1 component_id="17"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="25">
+					<pos x="3.5" y="-0.75"/>
+					<in1 component_id="24"/>
+					<in2 component_id="14"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="68" i="2">
+					<pos x="-5.5" y="-0.75"/>
+					<in1 component_id="4"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="69" i="1">
+					<pos x="-5.5" y="-0.25"/>
+					<in1 component_id="4"/>
+				</object>
+			</c>
+			<c type="37">
+				<object id="72" m="1">
+					<pos x="-3" y="-0.75"/>
+					<in1 component_id="79"/>
+					<in2 component_id="80"/>
+					<r text="2" value="2"/>
+					<i text="1" value="1"/>
+					<min text="1" value="1"/>
+					<max text="10" value="10"/>
+				</object>
+			</c>
+			<c type="45">
+				<object id="73" e="x*1000">
+					<pos x="-1.75" y="0.25"/>
+					<in1 component_id="72"/>
+				</object>
+			</c>
+			<c type="40">
+				<object id="74" count="2">
+					<pos x="-0.5" y="-0.75"/>
+					<in1 component_id="77"/>
+					<in2 component_id="78"/>
+				</object>
+			</c>
+			<c type="45">
+				<object id="77" e="floor(x/10)">
+					<pos x="-1.75" y="-0.25"/>
+					<in1 component_id="72"/>
+				</object>
+			</c>
+			<c type="45">
+				<object id="78" e="x%10">
+					<pos x="-1.75" y="-0.75"/>
+					<in1 component_id="72"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="79">
+					<pos x="-4.25" y="-0.25"/>
+					<in1 component_id="69"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="80">
+					<pos x="-4.25" y="-0.75"/>
+					<in1 component_id="68"/>
+				</object>
+			</c>
+			<c type="56">
+				<object id="81" script='
+
+e=string
+p=tonumber
+x=screen
+--yyy--
+function a(b)
+c=1
+while d[c]do
+b=e.gsub(b,d[c][2],d[c][1])
+c=c+1 
+end
+c=1
+while f[c]do
+b=e.gsub(b,f[c][2],f[c][1])
+c=c+1 
+end
+g={}
+h=1
+i=0
+j=e.find(b,";"
+)
+while j do
+g[h]={}
+k=e.sub(b,i+1,j)
+l=1
+m=0
+while m&lt; e.len(k)do
+n=e.sub(k,m+1,m+1)
+o=e.sub(k,m+1,m+8)
+if not(o==";"
+)then
+c=p("0x"
+..e.sub(o,1,2))
+q=p("0x"
+..e.sub(o,3,4))
+r=p("0x"
+..e.sub(o,5,6))
+s=p("0x"
+..e.sub(o,7,8))
+if s==0 then
+g[h][l]=false else g[h][l]={}g[h][l][1]=c
+g[h][l][2]=q
+g[h][l][3]=r
+g[h][l][4]=s 
+end
+end
+m=m+8
+l=l+1 
+end
+i=j
+j=e.find(b,";"
+,j+1)
+h=h+1 
+end
+return g 
+end
+t=0.4
+function u(v,w,c,q,r,s)
+if not c then
+c=0
+end
+if not q then
+q=0
+end
+if not r then
+r=0
+end
+if not s then
+s=0
+end
+x.setColor(c*t,q*t,r*t,s)
+x.drawRectF(v-1,w-1,1,1)
+end
+y=0
+z=0
+function onDraw()
+A=x.getWidth()
+B=x.getHeight()
+if not C then
+return 
+end
+k=1
+while not(C[k]==nil)do
+o=1
+while not(C[k][o]==nil)do
+if not C[k][o]==false then
+u(y+o,z+D-1+k,C[k][o][1],C[k][o][2],C[k][o][3],C[k][o][4]*E)
+end
+o=o+1 
+end
+k=k+1 
+end
+end
+E=1
+function onTick()
+--E=input.getNumber(1)
+end
+D=1
+f={{"000000","I"},{"ggggg","H"},{"gggggggggg","G"},{"wwwww","V"},{"wwwwwwwwww","W"},{"xxx","Z"},{"xxxxx","Y"},{"xxxxxxxxxx","X"},{"ffffffff","g"},{"000000ff","w"},{"00000000","x"}}
+H="Ruuz#y,uuz#Q;I,uu~~yuu,r;ISu_!~~~~u_S:;I#uz!~q~q~,uzNQ;P,u~_#y,_#yyuqr;PSsoysps#y,sN:;P#_oyuouoy_S_Q;I_q#yuzyuzyq#_r;I_Ny,uvvkuyq,_:;I_#os!vzoz!vsoSsQ;IOk_pm-Or;I_#yt-sos!k_o,sQ;I_o#z=uyu-z#p_:;I_TN-uou!-zqo_r;P#T#kupu=-q#y_Q;Pp_-,uzyuz,-_y_Q;PotSs=vk-s#!-_oz:;Py,_-z,tkzTk-_N-_yqr;Py_-z#z!k_y_kzN=_Tr;PT=_S=_pm#tz#qr;Ip_-_#-O-,m_TQ;I#q=s-,O,-s-z#qQ;Io_-m#A;US_B;U#C;Ioz=t_ND;E;IT=ms-J;K;l,oNj;loT!j;Rn-~yM;Rn-~yM;loT!j;l,oNj;K;IT=ms-J;E;Ioz=t_ND;U#C;US_B;Io_-m#A;I#q=s-,O,-s-z#qQ;Ip_-_#-O-,m_TQ;PT=_S=_pm#tz#qr;Py_-z#z!k_y_kzN=_Tr;Py,_-z,tkzTk-_N-_yqr;PotSs=vk-s#!-_oz:;Pp_-,uzyuz,-_y_Q;P#T#kupu=-q#y_Q;I_TN-uou!-zqo_r;I_o#z=uyu-z#p_:;I_#yt-sos!k_o,sQ;IOk_pm-Or;I_#os!vzoz!vsoSsQ;I_Ny,uvvkuyq,_:;I_q#yuzyuzyq#_r;P#_oyuouoy_S_Q;PSsoysps#y,sN:;P,u~O~uqr;I#uz!~q#q#~uzNQ;ISu_!~~~~u_S:;I,uu~~yuu,r;Ruu_yuu_,Q;;"
+d={{"_p_#=m_y:","A"},{"o_N!-mzp:","B"},{"_y_q=mzp:","C"},{"vkz,ttzp:","D"},{"Iy_-t_#!F","E"},{"-p=Smt_yr","F"},{"zT-s-mzpr","J"},{"IT=ts-SpL","K"},{"#!-s-tzpr","L"},{",-~n,-n,Q","M"},{"!q","N"},{"Iz","P"},{"sys","O"},{"ef","Q"},{"1f4f1f","R"},{"!,","S"},{"yz","T"},{"Ioz=mz","U"},{"-mtzpr","j"},{"--","k"},{"Iyz=tmz","l"},{"_=","m"},{"~y-~y","n"},{"#,","p"},{"!y","o"},{",z","q"},{"!ef","r"},{"_z","s"},{"_!-","t"},{"__","u"},{"----","v"},{",,","y"},{":I","z"},{"efI","!"},{":002f1f","="},{",,,,,","~"},{":1f4f1f","#"},{"ef002f1f","-"},{":I:I","_"},{"ef1f4f1f",","},{"efIefIef",":"}}
+C=a(H)'>
+					<pos x="-0.5" y="1.5"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="4">
+				<object id="2">
+					<pos x="-1.75" y="0.75"/>
+				</object>
+			</c>
+			<c type="4">
+				<object id="4">
+					<pos x="-6.75" y="-1"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="6">
+					<pos x="3.5" y="-1.25"/>
+					<in1 component_id="14"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="8">
+					<pos x="4.75" y="-0.5"/>
+					<in1 component_id="25"/>
+				</object>
+			</c>
+			<c type="7">
+				<object id="13">
+					<pos x="2.25" y="0.5"/>
+					<in1 component_id="17" node_index="1"/>
+				</object>
+			</c>
+			<c type="5">
+				<object id="63">
+					<pos x="2.25" y="1"/>
+					<in1 component_id="17"/>
+				</object>
+			</c>
+			<c type="5">
+				<object id="66">
+					<pos x="0.75" y="-0.25"/>
+					<in1 component_id="74"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="14">
+				<pos x="2.25" y="-1"/>
+				<in1 component_id="4"/>
+			</c0>
+			<c1 id="17" script="TargetTime = {}
+TargetAzimuth = {}
+TargetElevation = {}
+counter = 0
+Range = 2000
+PingDelay = 0
+TargetCount = 0
+TargetRedundancy = {}
+function onTick()
+	counter = counter+1
+	
+	output.setBool(1, false)
+	if(counter &gt; PingDelay)
+	then
+		counter = 0
+		output.setNumber(32,TargetCount)
+		TargetCount = 0
+		output.setBool(1, true)
+		Range = input.getNumber(32)
+	end
+	
+	for i = 1,8,1
+	do
+		if(input.getBool(i) == true and TargetRedundancy[i] == false)
+		then
+			TargetCount = TargetCount + 1
+			TargetRedundancy[i] = true
+			TargetTime[TargetCount] = counter
+		    TargetAzimuth[TargetCount] = input.getNumber((i*2)-1)
+		    TargetElevation[TargetCount] = input.getNumber(i*2)
+			output.setNumber(TargetCount, TargetAzimuth[TargetCount])
+			
+		else
+			TargetRedundancy[i] = false
+		end
+		
+	end
+	
+end
+
+
+function onDraw()
+	w = screen.getWidth()/2			  
+	h = screen.getHeight()/2		
+	scale = (w-2)/Range
+	PingDelay = Range*120/1480
+	
+	screen.setColor(0, 100, 0)			 
+	screen.drawCircle(w, h, 1480*counter*scale/120)
+	if(TargetCount &gt; 0)
+	then
+		for i = 1,TargetCount,1 
+		do 
+			d = 1480*TargetTime[i]/120
+			hd = d*math.cos(6.28*TargetElevation[i])
+			pos = hd*scale
+			if(TargetElevation[i]&lt;0)
+			then
+				screen.setColor(255, 255, 255)
+			else
+				screen.setColor(50, 50, 50)
+			end
+			screen.drawRect(pos*math.cos(6.28*TargetAzimuth[i]-1.57)+w, pos*math.sin(6.28*TargetAzimuth[i]-1.57)+w, 1, 1)
+		end
+	end
+end">
+				<pos x="0.75" y="0.5"/>
+				<in1 component_id="19"/>
+				<in2 component_id="81" node_index="1"/>
+			</c1>
+			<c2 id="19" count="1" offset="31">
+				<pos x="-0.5" y="0.5"/>
+				<inc component_id="2"/>
+				<in1 component_id="73"/>
+			</c2>
+			<c3 id="24">
+				<pos x="2.25" y="-0.5"/>
+				<in1 component_id="17"/>
+			</c3>
+			<c4 id="25">
+				<pos x="3.5" y="-0.75"/>
+				<in1 component_id="24"/>
+				<in2 component_id="14"/>
+			</c4>
+			<c5 id="68" i="2">
+				<pos x="-5.5" y="-0.75"/>
+				<in1 component_id="4"/>
+			</c5>
+			<c6 id="69" i="1">
+				<pos x="-5.5" y="-0.25"/>
+				<in1 component_id="4"/>
+			</c6>
+			<c7 id="72" m="1">
+				<pos x="-3" y="-0.75"/>
+				<in1 component_id="79"/>
+				<in2 component_id="80"/>
+				<r text="2" value="2"/>
+				<i text="1" value="1"/>
+				<min text="1" value="1"/>
+				<max text="10" value="10"/>
+			</c7>
+			<c8 id="73" e="x*1000">
+				<pos x="-1.75" y="0.25"/>
+				<in1 component_id="72"/>
+			</c8>
+			<c9 id="74" count="2">
+				<pos x="-0.5" y="-0.75"/>
+				<in1 component_id="77"/>
+				<in2 component_id="78"/>
+			</c9>
+			<c10 id="77" e="floor(x/10)">
+				<pos x="-1.75" y="-0.25"/>
+				<in1 component_id="72"/>
+			</c10>
+			<c11 id="78" e="x%10">
+				<pos x="-1.75" y="-0.75"/>
+				<in1 component_id="72"/>
+			</c11>
+			<c12 id="79">
+				<pos x="-4.25" y="-0.25"/>
+				<in1 component_id="69"/>
+			</c12>
+			<c13 id="80">
+				<pos x="-4.25" y="-0.75"/>
+				<in1 component_id="68"/>
+			</c13>
+			<c14 id="81" script='
+
+e=string
+p=tonumber
+x=screen
+--yyy--
+function a(b)
+c=1
+while d[c]do
+b=e.gsub(b,d[c][2],d[c][1])
+c=c+1 
+end
+c=1
+while f[c]do
+b=e.gsub(b,f[c][2],f[c][1])
+c=c+1 
+end
+g={}
+h=1
+i=0
+j=e.find(b,";"
+)
+while j do
+g[h]={}
+k=e.sub(b,i+1,j)
+l=1
+m=0
+while m&lt; e.len(k)do
+n=e.sub(k,m+1,m+1)
+o=e.sub(k,m+1,m+8)
+if not(o==";"
+)then
+c=p("0x"
+..e.sub(o,1,2))
+q=p("0x"
+..e.sub(o,3,4))
+r=p("0x"
+..e.sub(o,5,6))
+s=p("0x"
+..e.sub(o,7,8))
+if s==0 then
+g[h][l]=false else g[h][l]={}g[h][l][1]=c
+g[h][l][2]=q
+g[h][l][3]=r
+g[h][l][4]=s 
+end
+end
+m=m+8
+l=l+1 
+end
+i=j
+j=e.find(b,";"
+,j+1)
+h=h+1 
+end
+return g 
+end
+t=0.4
+function u(v,w,c,q,r,s)
+if not c then
+c=0
+end
+if not q then
+q=0
+end
+if not r then
+r=0
+end
+if not s then
+s=0
+end
+x.setColor(c*t,q*t,r*t,s)
+x.drawRectF(v-1,w-1,1,1)
+end
+y=0
+z=0
+function onDraw()
+A=x.getWidth()
+B=x.getHeight()
+if not C then
+return 
+end
+k=1
+while not(C[k]==nil)do
+o=1
+while not(C[k][o]==nil)do
+if not C[k][o]==false then
+u(y+o,z+D-1+k,C[k][o][1],C[k][o][2],C[k][o][3],C[k][o][4]*E)
+end
+o=o+1 
+end
+k=k+1 
+end
+end
+E=1
+function onTick()
+--E=input.getNumber(1)
+end
+D=1
+f={{"000000","I"},{"ggggg","H"},{"gggggggggg","G"},{"wwwww","V"},{"wwwwwwwwww","W"},{"xxx","Z"},{"xxxxx","Y"},{"xxxxxxxxxx","X"},{"ffffffff","g"},{"000000ff","w"},{"00000000","x"}}
+H="Ruuz#y,uuz#Q;I,uu~~yuu,r;ISu_!~~~~u_S:;I#uz!~q~q~,uzNQ;P,u~_#y,_#yyuqr;PSsoysps#y,sN:;P#_oyuouoy_S_Q;I_q#yuzyuzyq#_r;I_Ny,uvvkuyq,_:;I_#os!vzoz!vsoSsQ;IOk_pm-Or;I_#yt-sos!k_o,sQ;I_o#z=uyu-z#p_:;I_TN-uou!-zqo_r;P#T#kupu=-q#y_Q;Pp_-,uzyuz,-_y_Q;PotSs=vk-s#!-_oz:;Py,_-z,tkzTk-_N-_yqr;Py_-z#z!k_y_kzN=_Tr;PT=_S=_pm#tz#qr;Ip_-_#-O-,m_TQ;I#q=s-,O,-s-z#qQ;Io_-m#A;US_B;U#C;Ioz=t_ND;E;IT=ms-J;K;l,oNj;loT!j;Rn-~yM;Rn-~yM;loT!j;l,oNj;K;IT=ms-J;E;Ioz=t_ND;U#C;US_B;Io_-m#A;I#q=s-,O,-s-z#qQ;Ip_-_#-O-,m_TQ;PT=_S=_pm#tz#qr;Py_-z#z!k_y_kzN=_Tr;Py,_-z,tkzTk-_N-_yqr;PotSs=vk-s#!-_oz:;Pp_-,uzyuz,-_y_Q;P#T#kupu=-q#y_Q;I_TN-uou!-zqo_r;I_o#z=uyu-z#p_:;I_#yt-sos!k_o,sQ;IOk_pm-Or;I_#os!vzoz!vsoSsQ;I_Ny,uvvkuyq,_:;I_q#yuzyuzyq#_r;P#_oyuouoy_S_Q;PSsoysps#y,sN:;P,u~O~uqr;I#uz!~q#q#~uzNQ;ISu_!~~~~u_S:;I,uu~~yuu,r;Ruu_yuu_,Q;;"
+d={{"_p_#=m_y:","A"},{"o_N!-mzp:","B"},{"_y_q=mzp:","C"},{"vkz,ttzp:","D"},{"Iy_-t_#!F","E"},{"-p=Smt_yr","F"},{"zT-s-mzpr","J"},{"IT=ts-SpL","K"},{"#!-s-tzpr","L"},{",-~n,-n,Q","M"},{"!q","N"},{"Iz","P"},{"sys","O"},{"ef","Q"},{"1f4f1f","R"},{"!,","S"},{"yz","T"},{"Ioz=mz","U"},{"-mtzpr","j"},{"--","k"},{"Iyz=tmz","l"},{"_=","m"},{"~y-~y","n"},{"#,","p"},{"!y","o"},{",z","q"},{"!ef","r"},{"_z","s"},{"_!-","t"},{"__","u"},{"----","v"},{",,","y"},{":I","z"},{"efI","!"},{":002f1f","="},{",,,,,","~"},{":1f4f1f","#"},{"ef002f1f","-"},{":I:I","_"},{"ef1f4f1f",","},{"efIefIef",":"}}
+C=a(H)'>
+				<pos x="-0.5" y="1.5"/>
+			</c14>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="-1.75" y="0.75"/>
+			</c0>
+			<c1 id="4">
+				<pos x="-6.75" y="-1"/>
+			</c1>
+			<c2 id="6">
+				<pos x="3.5" y="-1.25"/>
+				<in1 component_id="14"/>
+			</c2>
+			<c3 id="8">
+				<pos x="4.75" y="-0.5"/>
+				<in1 component_id="25"/>
+			</c3>
+			<c4 id="13">
+				<pos x="2.25" y="0.5"/>
+				<in1 component_id="17" node_index="1"/>
+			</c4>
+			<c5 id="63">
+				<pos x="2.25" y="1"/>
+				<in1 component_id="17"/>
+			</c5>
+			<c6 id="66">
+				<pos x="0.75" y="-0.25"/>
+				<in1 component_id="74"/>
+			</c6>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

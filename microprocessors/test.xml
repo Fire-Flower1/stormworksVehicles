@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="thing" description="No description set." width="2" length="2" id_counter="4" id_counter_node="1">
+	<nodes>
+		<n id="1" component_id="3">
+			<node label="Input" type="6" description="The input signal to be processed."/>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="56">
+				<object id="4" script="-- Tick function that will be executed every logic tick
+function onTick()
+	value = input.getNumber(1)			 -- Read the first number from the script's composite input
+	output.setNumber(1, value * 10)		-- Write a number to the script's composite output
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+	w = screen.getWidth()				  -- Get the screen's width and height
+	h = screen.getHeight()					
+	screen.setColor(0, 255, 0)			 -- Set draw color to green
+	screen.drawClear()
+	screen.setColor(0,0,0)
+	screen.drawTextBox(1, 1, 1, 1, w..h, 1, 1)
+end">
+					<pos x="-1.75"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="7">
+				<object id="3">
+					<in1 component_id="4" node_index="1"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="4" script="-- Tick function that will be executed every logic tick
+function onTick()
+	value = input.getNumber(1)			 -- Read the first number from the script's composite input
+	output.setNumber(1, value * 10)		-- Write a number to the script's composite output
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+	w = screen.getWidth()				  -- Get the screen's width and height
+	h = screen.getHeight()					
+	screen.setColor(0, 255, 0)			 -- Set draw color to green
+	screen.drawClear()
+	screen.setColor(0,0,0)
+	screen.drawTextBox(1, 1, 1, 1, w..h, 1, 1)
+end">
+				<pos x="-1.75"/>
+			</c0>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="3">
+				<in1 component_id="4" node_index="1"/>
+			</c0>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Data Screen" description="No description set." width="3" length="3" id_counter="20" id_counter_node="8" sym1="29298" sym2="35466" sym3="35466" sym4="35466" sym5="35466" sym6="35466" sym7="35466" sym8="35466" sym9="35466" sym10="35466" sym11="35466" sym12="35466" sym13="29298">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="RPS" mode="1" type="1" description="The input signal to be processed."/>
+		</n>
+		<n id="2" component_id="4">
+			<node label="Temp" mode="1" type="1" description="The input signal to be processed.">
+				<position x="2" z="1"/>
+			</node>
+		</n>
+		<n id="3" component_id="6">
+			<node label="Generator 1" mode="1" type="1" description="The input signal to be processed.">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="4" component_id="8">
+			<node label="Generator 2" mode="1" type="1" description="The input signal to be processed.">
+				<position x="1" z="1"/>
+			</node>
+		</n>
+		<n id="5" component_id="10">
+			<node label="Throttle" mode="1" type="1" description="The input signal to be processed.">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="6" component_id="13">
+			<node label="Battery" mode="1" type="1" description="The input signal to be processed.">
+				<position z="1"/>
+			</node>
+		</n>
+		<n id="7" component_id="15">
+			<node label="Fuel" mode="1" type="1" description="The input signal to be processed.">
+				<position z="2"/>
+			</node>
+		</n>
+		<n id="8" component_id="18">
+			<node label="Video Out" type="6" description="The input signal to be processed.">
+				<position x="1" z="2"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="40">
+				<object id="19" count="7">
+					<pos x="-0.5" y="-1.5"/>
+					<in1 component_id="15"/>
+					<in2 component_id="13"/>
+					<in3 component_id="10"/>
+					<in4 component_id="8"/>
+					<in5 component_id="6"/>
+					<in6 component_id="4"/>
+					<in7 component_id="2"/>
+				</object>
+			</c>
+			<c type="56">
+				<object id="20" script="-- Tick function that will be executed every logic tick
+function onTick()
+	Fuel = input.getNumber(1)
+	Battery = input.getNumber(2)
+	Throttle = input.getNumber(3)
+	Generator2 = input.getNumber(4)
+	Generator1 = input.getNumber(5)
+	Temp = input.getNumber(6)
+	RPS = input.getNumber(7)
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+	w = screen.getWidth()
+	h = screen.getHeight()
+	screen.setColor(0, 0, 0)
+	screen.drawClear()
+	screen.setColor(200, 200, 200)
+	screen.drawTextBox(1, 1, 64, 1, Fuel, 1, 0)
+end">
+					<pos x="1.5" y="-0.75"/>
+					<in1 component_id="19"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="2">
+				<object id="2">
+					<pos x="-2.5" y="-2.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="4">
+					<pos x="-2.5" y="-1.75"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="6">
+					<pos x="-2.5" y="-1.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="8">
+					<pos x="-2.5" y="-0.75"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="10">
+					<pos x="-2.5" y="-0.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="13">
+					<pos x="-2.5" y="0.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="15">
+					<pos x="-2.5" y="0.75"/>
+				</object>
+			</c>
+			<c type="7">
+				<object id="18">
+					<pos x="3" y="-0.75"/>
+					<in1 component_id="20" node_index="1"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="19" count="7">
+				<pos x="-0.5" y="-1.5"/>
+				<in1 component_id="15"/>
+				<in2 component_id="13"/>
+				<in3 component_id="10"/>
+				<in4 component_id="8"/>
+				<in5 component_id="6"/>
+				<in6 component_id="4"/>
+				<in7 component_id="2"/>
+			</c0>
+			<c1 id="20" script="-- Tick function that will be executed every logic tick
+function onTick()
+	Fuel = input.getNumber(1)
+	Battery = input.getNumber(2)
+	Throttle = input.getNumber(3)
+	Generator2 = input.getNumber(4)
+	Generator1 = input.getNumber(5)
+	Temp = input.getNumber(6)
+	RPS = input.getNumber(7)
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+	w = screen.getWidth()
+	h = screen.getHeight()
+	screen.setColor(0, 0, 0)
+	screen.drawClear()
+	screen.setColor(200, 200, 200)
+	screen.drawTextBox(1, 1, 64, 1, Fuel, 1, 0)
+end">
+				<pos x="1.5" y="-0.75"/>
+				<in1 component_id="19"/>
+			</c1>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="-2.5" y="-2.25"/>
+			</c0>
+			<c1 id="4">
+				<pos x="-2.5" y="-1.75"/>
+			</c1>
+			<c2 id="6">
+				<pos x="-2.5" y="-1.25"/>
+			</c2>
+			<c3 id="8">
+				<pos x="-2.5" y="-0.75"/>
+			</c3>
+			<c4 id="10">
+				<pos x="-2.5" y="-0.25"/>
+			</c4>
+			<c5 id="13">
+				<pos x="-2.5" y="0.25"/>
+			</c5>
+			<c6 id="15">
+				<pos x="-2.5" y="0.75"/>
+			</c6>
+			<c7 id="18">
+				<pos x="3" y="-0.75"/>
+				<in1 component_id="20" node_index="1"/>
+			</c7>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

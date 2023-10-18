@@ -1,0 +1,2130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Modular Radar System - Radar Controller (Dish) v1_1" description="Radar controller for a radar (Dish)" width="5" length="4" id_counter="165" id_counter_node="27" sym0="16386" sym1="24582" sym2="28686" sym3="30750" sym4="31710" sym5="31710" sym6="29070" sym7="24582" sym8="16386" sym9="65535" sym10="35669" sym11="32085" sym12="40021" sym13="60233" sym14="7261" sym15="65535">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="GPS X" mode="1" type="1" description="X Coordinate from GPS Sensor"/>
+		</n>
+		<n id="2" component_id="4">
+			<node label="GPS Y" mode="1" type="1" description="Y Coordinate from GPS Sensor">
+				<position z="1"/>
+			</node>
+		</n>
+		<n id="3" component_id="6">
+			<node label="Altitude" mode="1" type="1" description="From Altimeter">
+				<position z="2"/>
+			</node>
+		</n>
+		<n id="4" component_id="12">
+			<node label="Tilt Angle (Forward)" mode="1" type="1" description="From Tilt Sensor (Forward)">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="5" component_id="11">
+			<node label="Tilt Angle (Left)" mode="1" type="1" description="From Tilt Sensor (Left)">
+				<position x="1" z="1"/>
+			</node>
+		</n>
+		<n id="6" component_id="10">
+			<node label="Tilt Angle (Up)" mode="1" type="1" description="From Tilt Sensor (Up)">
+				<position x="1" z="2"/>
+			</node>
+		</n>
+		<n id="7" component_id="17">
+			<node label="Radar Elevation Angle" mode="1" type="1" description="From Radar">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="8" component_id="16">
+			<node label="Radar Target Distance" mode="1" type="1" description="From Radar">
+				<position x="2" z="1"/>
+			</node>
+		</n>
+		<n id="9" component_id="18">
+			<node label="Radar Signal Strength" mode="1" type="1" description="From Radar">
+				<position x="2" z="2"/>
+			</node>
+		</n>
+		<n id="11" component_id="24">
+			<node label="Rotational Target" type="1" description="To Velocity Pivot">
+				<position x="3" z="1"/>
+			</node>
+		</n>
+		<n id="12" component_id="25">
+			<node label="Radar FOV" type="1" description="To Radar">
+				<position x="3" z="2"/>
+			</node>
+		</n>
+		<n id="13" component_id="27">
+			<node label="Compass" mode="1" type="1" description="From Compass Sensor">
+				<position x="2" z="3"/>
+			</node>
+		</n>
+		<n id="14" component_id="35">
+			<node label="Coordinate Signal Output" type="5" description="The input signal to be processed.">
+				<position x="1" z="3"/>
+			</node>
+		</n>
+		<n id="15" component_id="37">
+			<node label="Tracking Signal Input" mode="1" type="5" description="For Tracking Use">
+				<position x="3" z="3"/>
+			</node>
+		</n>
+		<n id="16" component_id="42">
+			<node label="Activate Radar" mode="1" description="The input signal to be processed.">
+				<position z="3"/>
+			</node>
+		</n>
+		<n id="17" component_id="51">
+			<node label="Target Map" type="6">
+				<position x="4"/>
+			</node>
+		</n>
+		<n id="26" component_id="110">
+			<node label="Target Map Touch Input" mode="1" type="5" description="From Target Map Screen">
+				<position x="4" z="1"/>
+			</node>
+		</n>
+		<n id="27" component_id="158">
+			<node label="Current rotation" mode="1" type="1" description="From Velocity Pivot">
+				<position x="3"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="56">
+				<object id="32" script='dM,dR=2,10
+lostT,srs,trs=0,1,1
+tm,twx,twy,twz,yaw=0,0,0,0,0,0
+yawO={}
+dtm,dtwx,dtwy,dtwz=0,0,0,0
+dtcx,dtcy,dtcz=0,0,0
+tsqz=0
+TRm=0
+
+inB=input.getBool
+inN=input.getNumber
+ouB=output.setBool
+ouN=output.setNumber
+m=math
+pi=m.pi
+pi2=2*pi
+s=m.sin
+c=m.cos
+t=m.tan
+as=m.asin
+at=m.atan
+abs=m.abs
+f4="%4.0f"
+sc=screen
+drT=sc.drawText
+
+function sgn(x)
+	return x/abs(x)
+end
+function len2(x,y)
+	return (x^2+y^2)^0.5
+end
+function len3(x,y,z)
+	return (x^2+y^2+z^2)^0.5
+end
+function drTf(x,y,txt,fmt)
+	return drawText(x,y,string.format(fmt,txt))
+end
+function angDif1(a,b)
+	a,b=a*pi2,b*pi2
+	return at(s(a-b),c(a-b))/pi2
+end
+function angFix(a)
+	return (a+0.5)%1-0.5
+end
+function SphToRec(r,qx,qz)
+	x=r*c(qx)*s(qz)
+	y=r*c(qx)*c(qz)
+	z=r*s(qx)
+return x,y,z
+end
+function LocalToWorld(xl,yl,zl,qx,qy,qz,xlw,ylw,zlw)
+	qx,qz=as(s(qx)/c(qy)),qz-at(t(qx)*t(qy))
+	xw=xlw+c(qz)*c(qy)*xl-(s(qz)*c(qx)+c(qz)*s(qy)*s(qx))*yl+(s(qz)*s(qx)-c(qz)*s(qy)*c(qx))*zl
+	yw=ylw+s(qz)*c(qy)*xl+(c(qz)*c(qx)-s(qz)*s(qy)*s(qx))*yl-(c(qz)*s(qx)+s(qz)*s(qy)*c(qx))*zl
+	zw=zlw+s(qy)*xl+c(qy)*s(qx)*yl+c(qy)*c(qx)*zl
+return xw,yw,zw
+end
+function CalcWrldCrd(sr,sqx,sqz,rqx,rqy,rqz,xlw,ylw,zlw)
+	xl,yl,zl=SphToRec(sr,sqx,sqz)
+	xw,yw,zw=LocalToWorld(xl,yl,zl,rqx,rqy,rqz,xlw,ylw,zlw)
+return xw,yw,zw
+end
+function RecToSph(x,y,z)
+	xy=len2(x,y)
+	r=len2(xy,z)
+	qx=at(z,xy)
+	qz=at(x,y)
+return r,qx,qz
+end
+function WorldToLocal(xw,yw,zw,qx,qy,qz,xlw,ylw,zlw)
+	qx,qz=as(s(qx)/c(qy)),qz-at(t(qx)*t(qy))
+	xr,yr,zr=xw-xlw,yw-ylw,zw-zlw
+	xl=c(qz)*c(qy)*xr-s(qz)*c(qy)*yr+s(qy)*zr
+	yl=(s(qz)*c(qx)+c(qz)*s(qy)*s(qx))*xr+(c(qz)*c(qx)-s(qz)*s(qy)*s(qx))*yr-c(qy)*s(qx)*zr
+	zl=(s(qz)*s(qx)-c(qz)*s(qy)*c(qx))*xr+(c(qz)*s(qx)+s(qz)*s(qy)*c(qx))*yr+c(qy)*c(qx)*zr
+return xl,yl,zl
+end
+function CalcLclCrd(xw,yw,zw,rqx,rqy,rqz,xlw,ylw,zlw)
+	xl,yl,zl=WorldToLocal(xw,yw,zw,rqx,rqy,rqz,xlw,ylw,zlw)
+	sr,sqx,sqz=RecToSph(xl,yl,zl)
+	return sr,sqx,sqz,xl,yl,zl
+end
+function pnpn(x,xMax,dx,sign)
+	x=x+sign*dx
+	if abs(x)&gt;xMax then
+		x=sgn(x)*xMax
+		sign=-sign
+	end
+	return x,sign
+end
+function RadYawS(yw)
+	if rng==1 then
+		yw=yw+rpt*1
+	else
+		yw,srs=pnpn(yw,rng/2,2*rpt*rng,srs)
+	end
+	return angFix(yw)
+end
+function RadYawT(yw,yw0)
+	TRrng=at(10/tsr)/pi2+lostT/10*fov
+	dyw=angDif1(yw,yw0)
+	if abs(dyw)&gt;TRrng then
+		yw=yw0
+	else
+		dyw,trs=pnpn(dyw,TRrng,fov/2,trs)
+		yw=dyw+yw0
+	end
+	return angFix(yw)
+end
+function tiltFix(q,v)
+	return q-m.min(0,sgn(v))*(sgn(q)/2-2*q)
+end
+
+function onTick()
+act=inB(1)
+isSR,isTR=inB(2),inB(3)
+table.insert(yawO,1,yaw)
+yawO[5]=nil
+if act and yawO[4]~=nil then
+	owx,owy,owz=inN(1)+inN(7),inN(2)+inN(8),inN(3)+inN(9)
+	com,elv,dst=inN(10)*pi2,inN(11)*pi2,inN(12)
+	tm=dst*inN(13)
+	vt=inN(6)
+	pit,rol=tiltFix(inN(4),vt)*pi2,tiltFix(inN(5),vt)*pi2
+	mR,mM=inN(18),inN(19)
+	if dst&gt;mR and tm&gt;mM then
+		twx,twy,twz=CalcWrldCrd(dst,elv,yawO[4]*pi2,pit,-rol,com,owx,owy,owz)
+	else
+		tm,twx,twy,twz=0,0,0,0
+	end
+
+	rps,dir,rng,fov=inN(21),inN(22),inN(23)/360,inN(24)
+	rpt=rps/60
+
+	TRm=inN(29)
+	Msgn=1
+	if isTR and TRm&gt;0 then
+		Msgn=-1
+	end
+
+	if Msgn==-1 and abs(TRm-tm)&lt;dM and len3(TRwx-twx,TRwy-twy,TRwz-twz)&lt;dR then
+		TRwx,TRwy,TRwz=twx,twy,twz
+		lostT=0
+	else
+		TRwx,TRwy,TRwz=inN(30),inN(31),inN(32)
+		lostT=lostT+1
+	end
+
+	if TRm&gt;0 and isTR then
+		tsr,tsqx,tsqz,tcx,tcy,tcz=CalcLclCrd(TRwx,TRwy,TRwz,-pit,rol,-com,owx,owy,owz)
+		tsqx,tsqz=tsqx/pi2,tsqz/pi2
+		yaw=RadYawT(yaw,tsqz)
+	elseif isSR then
+		tcr,tcqx,tcqz=1,0,0
+		yaw=RadYawS(yaw)
+	end
+else
+	tm,Msgn,yaw=0,1,0
+	srs,trs=1,1
+end
+ouN(1,tm*Msgn)
+ouN(2,twx)
+ouN(3,twy)
+ouN(4,twz)
+ouN(5,tsr)
+ouN(6,tsqx)
+ouN(7,tsqz)
+ouN(11,yaw)
+ouB(1,true)
+ouB(2,isSR)
+ouB(3,isTR)
+end
+
+function onDraw()
+w=sc.getWidth()
+h=sc.getHeight()
+sc.setColor(0,255,0)
+sc.drawLine(w/2,h/2,w/2+w*c((-yaw+1/4)*pi2),h/2-w*s((-yaw+1/4)*pi2))
+drT(1,8,"tm  "..dtm)
+drT(1,56,"twx "..dtwx)
+drT(1,64,"twy "..dtwy)
+drT(1,72,"twz "..dtwz)
+drT(1,80,"lostt"..lostT)
+if tm&gt;10 then
+	sc.setColor(255,0,0)
+	drT(1,1,"detect")
+	dtm,dtwx,dtwy,dtwz=tm,twx,twy,twz
+end
+if TRm&gt;10 then
+	dtcx,dtcy,dtcz=tcx,tcy,tcz
+	drT(1,24,"tcx "..dtcx)
+	drT(1,32,"tcy "..dtcy)
+	drT(1,40,"tcz "..dtcz)
+end
+end'>
+					<pos y="-2"/>
+					<in1 component_id="38"/>
+				</object>
+			</c>
+			<c type="40">
+				<object id="38">
+					<pos x="-1.25" y="-9.75"/>
+					<inc component_id="41"/>
+					<in1 component_id="2"/>
+					<in2 component_id="4"/>
+					<in3 component_id="6"/>
+					<in4 component_id="12"/>
+					<in5 component_id="11"/>
+					<in6 component_id="10"/>
+					<in7 component_id="149"/>
+					<in8 component_id="150"/>
+					<in9 component_id="151"/>
+					<in10 component_id="27"/>
+					<in11 component_id="17"/>
+					<in12 component_id="16"/>
+					<in13 component_id="18"/>
+					<in14 component_id="39"/>
+					<in15/>
+					<in16/>
+					<in17/>
+					<in18 component_id="152"/>
+					<in19 component_id="153"/>
+					<in20 component_id="118"/>
+					<in21 component_id="95"/>
+					<in22 component_id="97"/>
+					<in23 component_id="48"/>
+					<in24 component_id="93"/>
+					<in25 component_id="101"/>
+					<in26 component_id="102"/>
+					<in27 component_id="103"/>
+					<in28 component_id="104"/>
+					<in29 component_id="80"/>
+					<in30 component_id="81"/>
+					<in31 component_id="82"/>
+					<in32 component_id="83"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="39" i="10">
+					<pos x="1.25" y="-2.25"/>
+					<in1 component_id="32"/>
+				</object>
+			</c>
+			<c type="41">
+				<object id="41" count="10">
+					<pos x="-5" y="-4.25"/>
+					<in1 component_id="42"/>
+					<in2 component_id="54"/>
+					<in3 component_id="55"/>
+					<in4 component_id="139"/>
+					<in5 component_id="140"/>
+					<in6 component_id="106"/>
+					<in7 component_id="107"/>
+					<in8 component_id="144"/>
+					<in9/>
+					<in10/>
+				</object>
+			</c>
+			<c type="19">
+				<object id="48" name="Radar scan range (deg)">
+					<pos x="-2.5" y="-7.5"/>
+					<min text="30" value="30"/>
+					<max text="360" value="360"/>
+					<int text="30" value="30"/>
+					<v text="360" value="360"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="54">
+					<pos x="-6.25" y="-2.5"/>
+					<in1 component_id="96"/>
+					<min text="0"/>
+					<max text="1" value="1"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="55">
+					<pos x="-6.25" y="-3"/>
+					<in1 component_id="96"/>
+					<min text="0"/>
+					<max text="-1" value="-1"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="80">
+					<pos x="-3.75" y="-8.25"/>
+					<in1 component_id="37"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="81" i="1">
+					<pos x="-3.75" y="-8.75"/>
+					<in1 component_id="37"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="82" i="2">
+					<pos x="-3.75" y="-9.25"/>
+					<in1 component_id="37"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="83" i="3">
+					<pos x="-3.75" y="-9.75"/>
+					<in1 component_id="37"/>
+				</object>
+			</c>
+			<c type="45">
+				<object id="93" e="ceil(x/60*100)/100">
+					<pos x="-2.5" y="-8"/>
+					<in1 component_id="95"/>
+				</object>
+			</c>
+			<c type="19">
+				<object id="95" name="Radar RPS">
+					<pos x="-2.5" y="-6.5"/>
+					<min text="0.5" value="0.5"/>
+					<max text="7.5" value="7.5"/>
+					<int text="0.1" value="0.1"/>
+					<v text="0.5" value="0.5"/>
+				</object>
+			</c>
+			<c type="20">
+				<object id="96" name="Radar type" v="1">
+					<pos x="-7.5" y="-2.75"/>
+					<items>
+						<i l="Search Radar">
+							<v text="1" value="1"/>
+						</i>
+						<i l="Targeting Radar">
+							<v text="-1" value="-1"/>
+						</i>
+						<i l="Dual Use">
+							<v text="0"/>
+						</i>
+					</items>
+				</object>
+			</c>
+			<c type="20">
+				<object id="97" name="Radar arrow direction from top view" v="1">
+					<pos x="-2.5" y="-7"/>
+					<items>
+						<i l="Clockwise">
+							<v text="1" value="1"/>
+						</i>
+						<i l="Counter Clockwise">
+							<v text="-1" value="-1"/>
+						</i>
+					</items>
+				</object>
+			</c>
+			<c type="31">
+				<object id="101">
+					<pos x="-3.75" y="-6"/>
+					<in1 component_id="32"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="102" i="1">
+					<pos x="-3.75" y="-6.5"/>
+					<in1 component_id="32"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="103" i="2">
+					<pos x="-3.75" y="-7"/>
+					<in1 component_id="32"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="104" i="3">
+					<pos x="-3.75" y="-7.5"/>
+					<in1 component_id="32"/>
+				</object>
+			</c>
+			<c type="20">
+				<object id="105" name="Target map style" v="2" i="2">
+					<pos x="-7.5" y="-3.75"/>
+					<items>
+						<i l="Disable">
+							<v text="0"/>
+						</i>
+						<i l="Local map orthogonal">
+							<v text="1" value="1"/>
+						</i>
+						<i l="Local map polar">
+							<v text="2" value="2"/>
+						</i>
+						<i l="World map">
+							<v text="3" value="3"/>
+						</i>
+					</items>
+				</object>
+			</c>
+			<c type="12">
+				<object id="106">
+					<pos x="-6.25" y="-3.5"/>
+					<in1 component_id="105"/>
+					<min text="1" value="1"/>
+					<max text="3" value="3"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="107">
+					<pos x="-6.25" y="-4"/>
+					<in1 component_id="105"/>
+					<min text="1" value="1"/>
+					<max text="2" value="2"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="111" n="Display range 1 (m)">
+					<pos x="-7.75" y="-5.75"/>
+					<v text="500" value="500"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="112" n="Display range 2 (m)">
+					<pos x="-7.75" y="-6.25"/>
+					<v text="1000" value="1000"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="113" n="Display range 3 (m)">
+					<pos x="-7.75" y="-6.75"/>
+					<v text="2500" value="2500"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="114" n="Display range 4 (m)">
+					<pos x="-7.75" y="-7.25"/>
+					<v text="0"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="115">
+					<pos x="-12.75" y="-8"/>
+					<in1 component_id="110"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="116">
+					<pos x="-11.5" y="-8"/>
+					<in1 component_id="115"/>
+				</object>
+			</c>
+			<c type="37">
+				<object id="117">
+					<pos x="-10.25" y="-8.5"/>
+					<in1 component_id="116"/>
+					<r text="0"/>
+					<i text="1" value="1"/>
+					<min text="0"/>
+					<max text="0"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="118">
+					<pos x="-6.5" y="-6.25"/>
+					<in1 component_id="111"/>
+					<in2 component_id="119"/>
+					<in3 component_id="122"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="119">
+					<pos x="-6.5" y="-7.25"/>
+					<in1 component_id="112"/>
+					<in2 component_id="120"/>
+					<in3 component_id="123"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="120">
+					<pos x="-6.5" y="-8.25"/>
+					<in1 component_id="113"/>
+					<in2 component_id="121"/>
+					<in3 component_id="124"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="121">
+					<pos x="-6.5" y="-9.25"/>
+					<in1 component_id="114"/>
+					<in2 component_id="118"/>
+					<in3 component_id="125"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="122">
+					<pos x="-7.75" y="-8.25"/>
+					<in1 component_id="138"/>
+					<min text="0"/>
+					<max text="0"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="123">
+					<pos x="-7.75" y="-8.75"/>
+					<in1 component_id="138"/>
+					<min text="1" value="1"/>
+					<max text="1" value="1"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="124">
+					<pos x="-7.75" y="-9.25"/>
+					<in1 component_id="138"/>
+					<min text="2" value="2"/>
+					<max text="2" value="2"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="125">
+					<pos x="-7.75" y="-9.75"/>
+					<in1 component_id="138"/>
+					<min text="3" value="3"/>
+					<max text="3" value="3"/>
+				</object>
+			</c>
+			<c type="15">
+				<object id="127">
+					<pos x="-7.75" y="-7.75"/>
+					<n text="100" value="100"/>
+				</object>
+			</c>
+			<c type="17">
+				<object id="128">
+					<pos x="-11.5" y="-9.75"/>
+					<in1 component_id="111"/>
+				</object>
+			</c>
+			<c type="17">
+				<object id="129">
+					<pos x="-11.5" y="-10.75"/>
+					<in1 component_id="112"/>
+				</object>
+			</c>
+			<c type="17">
+				<object id="130">
+					<pos x="-11.5" y="-11.75"/>
+					<in1 component_id="113"/>
+				</object>
+			</c>
+			<c type="17">
+				<object id="131">
+					<pos x="-11.5" y="-12.75"/>
+					<in1 component_id="114"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="133">
+					<pos x="-10.25" y="-9.75"/>
+					<in1 component_id="137"/>
+					<in3 component_id="128"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="134">
+					<pos x="-10.25" y="-10.75"/>
+					<in1 component_id="137"/>
+					<in3 component_id="129"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="135">
+					<pos x="-10.25" y="-11.75"/>
+					<in1 component_id="137"/>
+					<in3 component_id="130"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="136">
+					<pos x="-10.25" y="-12.75"/>
+					<in1 component_id="137"/>
+					<in3 component_id="131"/>
+				</object>
+			</c>
+			<c type="15">
+				<object id="137">
+					<pos x="-11.5" y="-9"/>
+					<n text="1" value="1"/>
+				</object>
+			</c>
+			<c type="36">
+				<object id="138" e="x%max(1,(a+b+c+d))">
+					<pos x="-9" y="-9.75"/>
+					<in1 component_id="117"/>
+					<in5 component_id="133"/>
+					<in6 component_id="134"/>
+					<in7 component_id="135"/>
+					<in8 component_id="136"/>
+				</object>
+			</c>
+			<c type="33">
+				<object id="139" n="Show display range" v="true">
+					<pos x="-8.75" y="-3.25"/>
+				</object>
+			</c>
+			<c type="33">
+				<object id="140" n="Show compass (Local map)">
+					<pos x="-8.75" y="-3.75"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="144">
+					<pos x="-6.25" y="-4.5"/>
+					<in1 component_id="105"/>
+					<min text="1" value="1"/>
+					<max text="1" value="1"/>
+				</object>
+			</c>
+			<c type="56">
+				<object id="146" script="tick=0
+t,l,o={},{},{}
+zoom,scr=1,0.1
+Mmin=25
+dM,dR=2,100
+delT=450
+tID,N=101,32
+divNm,dq=6,10/360
+divq=1/8
+a,b=255,127
+inB=input.getBool;inN=input.getNumber;ouB=output.setBool;ouN=output.setNumber
+tI=table.insert;tR=table.remove
+m=math
+pi=m.pi
+pi2=2*pi
+s=m.sin
+c=m.cos
+as=m.asin
+at=m.atan
+abs=m.abs
+sc=screen
+sC=sc.setColor
+drT=sc.drawText
+drL=sc.drawLine
+drC=sc.drawCircle
+drCF=sc.drawCircleF
+drTF=sc.drawTriangleF
+MTS=map.mapToScreen
+
+function len3(x,y,z)
+	return (x^2+y^2+z^2)^0.5
+end
+
+function drA(x0,y0,r,q,qa,dN,fill)
+	for j=-1,1,2 do
+		dqi=j*qa/dN
+		for i=1,dN/2 do
+			qi1=q-dqi*i
+			qi2=qi1+dqi
+			x1,y1,x2,y2=x0+r*c(qi1),y0-r*s(qi1),x0+r*c(qi2),y0-r*s(qi2)
+			if fill then
+				drTF(x0,y0,x1,y1,x2,y2)
+			else
+				drL(x1,y1,x2,y2)
+			end
+		end
+	end
+end
+
+function angDifp(a,b)
+	return at(s(a-b),c(a-b))
+end
+
+function onTick()
+	act,map,lcl,orth=inB(1),inB(6),inB(7),inB(8)
+	if map then
+		yaw=inN(14)*pi2
+		o.x,o.y,o.z,o.com=inN(1)+inN(7),inN(2)+inN(8),inN(3)+inN(9),inN(10)*pi2
+		rng,fov,dRng=inN(23)/360,inN(24),inN(20)
+		dr,cm=inB(4),inB(5)
+	end
+end
+
+function onDraw()
+w=sc.getWidth()
+h=sc.getHeight()
+w=w-1
+
+	if map then
+		if lcl then
+			if orth then
+				scw,sch,lxo,lyo=w/(rng*pi2),h/dRng,w/2,h
+				lr,lq0=dRng*sch,0;lq=lq0-yaw
+			else
+				if rng&gt;0.5 then
+					scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+				else
+					scr,lxo,lyo=m.min(h/dRng,w/(2*dRng*s(rng*pi))),w/2,h
+				end
+				lr,lq0=dRng*scr,pi/2;lq=lq0-yaw
+			end
+		else
+			scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+			zoom=w/scr/10^3
+			sc.setMapColorLand(70,70,70);sc.setMapColorGrass(25,40,25);sc.drawMap(o.x,o.y,zoom)
+			lr,lq0=dRng*scr,pi/2+o.com;lq=lq0-yaw
+		end
+
+		sC(63,a,63,b)
+		if rng&gt;divq then
+			dlq=divq*pi2
+			for i=1,rng/2/divq do
+			for j=-1,1,2 do
+				lqi=lq0-j*i*dlq
+				if orth then
+					lqi=lqi*scw+lxo
+					drL(lqi,0,lqi,lyo)
+				elseif not (rng==1 and i==rng/2/divq and j==1) then
+					drL(lxo,lyo,lxo+lr*c(lqi),lyo-lr*s(lqi))
+				end
+			end
+			end
+		end
+		if orth then
+			drL(0,h/2,w,h/2)
+			sC(63,a,63,195);drL(lxo,0,lxo,lyo)
+		else
+			divN=m.ceil(m.ceil(m.max(divNm,rng/dq))/2)*2
+			drL(lxo,lyo,lxo+lr*c(lq0),lyo-lr*s(lq0))
+			drA(lxo,lyo,lr/2,lq0,rng*pi2,divN,false)
+		end
+
+		sC(31,a,31,b)
+		if act then
+			if orth then
+				for j=-1,1 do
+					lxl,lxw=lxo+(-lq+j*pi2-fov*pi)*scw,fov*pi2*scw
+					sc.drawRectF(lxl,0,lxw,lyo)
+				end
+			else
+				drA(lxo,lyo,lr,lq,fov*pi2,6,true)
+			end
+		end
+
+		sC(0,a,0)
+		if orth then
+			sc.drawRect(0,0,w-0,h-1)
+		else
+			drA(lxo,lyo,lr,lq0,rng*pi2,divN,false)
+			if rng&lt;1 then
+				for j=-1,1,2 do
+					lqe=lq0-j*rng*pi
+					drL(lxo,lyo,lxo+lr*c(lqe),lyo-lr*s(lqe))
+				end
+			end
+		end
+
+		if lcl and cm then
+			for i=-1,1,2 do
+				if orth then
+					if i==1 then sC(15,15,a,b) else sC(a,15,15,b) end
+					cq=angDifp(o.com+i*pi/2+pi/2,0)*scw
+					drL(lxo+cq,1,lxo+cq,lyo-1)
+				else
+					if i==1 then sC(15,15,a) else sC(a,15,15) end
+					cq=-o.com-i*pi/2
+					tq=pi/32
+					drTF(lxo+(lr-2)*c(cq),lyo-(lr-2)*s(cq),lxo+(lr+2)*c(cq+tq),lyo-(lr+2)*s(cq+tq),lxo+(lr+2)*c(cq-tq),lyo-(lr+2)*s(cq-tq))
+				end
+			end
+		end
+	end
+end">
+					<pos y="-3.75"/>
+					<in1 component_id="38"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="149" n="Radar right offset from GPS X (m)">
+					<pos x="-2.5" y="-3.5"/>
+					<v text="-0.5" value="-0.5"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="150" n="Radar front offset from GPS Y (m)">
+					<pos x="-2.5" y="-4"/>
+					<v text="0.5" value="0.5"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="151" n="Radar up offset from Altimeter (m)">
+					<pos x="-2.5" y="-4.5"/>
+					<v text="1.5" value="1.5"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="152" n="Minimum detect range (m)">
+					<pos x="-2.5" y="-5.5"/>
+					<v text="25" value="25"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="153" n="Minimum detect mass (kg)">
+					<pos x="-2.5" y="-6"/>
+					<v text="10" value="10"/>
+				</object>
+			</c>
+			<c type="56">
+				<object id="154" script='tick=0
+t,l,o={},{},{}
+zoom,scr=1,0.1
+Mmin=25
+dM,dR=2,100
+delT=450
+tID,N=101,32
+divNm,dq=6,10/360
+divq=1/8
+a,b=255,127
+inB=input.getBool;inN=input.getNumber;ouB=output.setBool;ouN=output.setNumber
+tI=table.insert;tR=table.remove
+m=math
+pi=m.pi
+pi2=2*pi
+s=m.sin
+c=m.cos
+as=m.asin
+at=m.atan
+abs=m.abs
+sc=screen
+sC=sc.setColor
+drT=sc.drawText
+drL=sc.drawLine
+drC=sc.drawCircle
+drCF=sc.drawCircleF
+MTS=map.mapToScreen
+
+function len3(x,y,z)
+	return (x^2+y^2+z^2)^0.5
+end
+
+function reg()
+	p=0;ow=false
+	t.m=abs(t.m)
+	if #l==0 then
+		p=1
+	elseif #l&lt;N or t.m-l[#l].m&gt;-dM then
+		for j=1,#l do
+			dmi=t.m-l[j].m
+			if abs(dmi)&lt;=dM and len3(t.x-l[j].x,t.y-l[j].y,t.z-l[j].z)&lt;dR then
+				p=j;ow=true;break
+			elseif dmi&gt;dM then
+				p=j;break
+			elseif j==#l and #l&lt;N then
+				p=j+1;break
+			end
+		end
+	end
+	if p&gt;0 then
+		if ow then
+			if t.t-l[p].t&gt;3 then
+				XO,YO,ZO,TO=l[p].x,l[p].y,l[p].z,l[p].t
+			else
+			XO,YO,ZO,TO=l[p].xO,l[p].yO,l[p].zO,l[p].tO
+			end
+			N,V=l[p].n,l[p].v
+			tR(l,p)
+		else
+			N,V,XO,YO,ZO,TO=tID,nil,nil,nil,nil,nil
+			tID=tID+1
+		end
+		tI(l,p,{m=t.m,x=t.x,y=t.y,z=t.z,t=t.t,n=N,v=V,xO=XO,yO=YO,zO=ZO,tO=TO})
+		if #l&gt;N then
+		tR(l,#l)
+		end
+	end
+end
+function angDifp(a,b)
+	return at(s(a-b),c(a-b))
+end
+
+function drA(x0,y0,r,q,qa,dN,fill)
+	for j=-1,1,2 do
+		dqi=j*qa/dN
+		for i=1,dN/2 do
+			qi1=q-dqi*i
+			qi2=qi1+dqi
+			x1,y1,x2,y2=x0+r*c(qi1),y0-r*s(qi1),x0+r*c(qi2),y0-r*s(qi2)
+			if fill then
+				sc.drawTriangleF(x0,y0,x1,y1,x2,y2)
+			else
+				drL(x1,y1,x2,y2)
+			end
+		end
+	end
+end
+
+function onTick()
+	act,map,lcl,orth=inB(1),inB(6),inB(7),inB(8)
+	if map then
+		yaw=inN(14)*pi2
+		o.x,o.y,o.z,o.com=inN(1)+inN(7),inN(2)+inN(8),inN(3)+inN(9),inN(10)*pi2
+		rng,fov,dRng=inN(23)/360,inN(24),inN(20)
+		dr,cm=inB(4),inB(5)
+	end
+	if act and map then
+		t.m,t.x,t.y,t.z,t.t=inN(25),inN(26),inN(27),inN(28),tick
+		if abs(t.m)&gt;=Mmin then
+			reg()
+		end
+		if #l&gt;0 then
+			for j=1,#l do
+				if l[j]~=nil and tick-l[j].t&gt;delT then
+					for k=j,#l-1 do
+						l[k]=l[k+1]
+					end
+					tR(l,#l)
+				end
+			end
+		end
+		tick=tick+1
+	else
+		tick=0
+	end
+end
+
+function onDraw()
+w=sc.getWidth()
+h=sc.getHeight()
+
+	if map then
+		if lcl then
+			if orth then
+				scw,sch,lxo,lyo=w/(rng*pi2),h/dRng,w/2,h
+				lr,lq=dRng*sch,rng*scw
+			else
+				if rng&gt;0.5 then
+					scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+				else
+					scr,lxo,lyo=m.min(h/dRng,w/(2*dRng*s(rng*pi))),w/2,h
+				end
+				lr,lq=dRng*scr,pi/2-yaw
+			end
+		else
+			scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+			zoom=w/scr/10^3
+			lr,lq=dRng*scr,pi/2+o.com-yaw
+		end
+
+sC(a,a,a,b)
+		if dr then drT(2,2,"R"..string.format("%d",dRng)) end
+
+sC(0,a,0)
+		if act and #l&gt;0 then
+			for j=1,#l do
+				dwx,dwy=l[j].x-o.x,l[j].y-o.y
+				R2,Q=len3(dwx,dwy,0),angDifp(at(dwy,dwx),pi/2+o.com)
+				if R2&lt;dRng then
+					if lcl and orth then
+						mr,mq=R2*sch,-Q*scw
+						mx,my=w/2+mq,h-mr
+					elseif lcl then
+						mr,mq=R2*scr,Q+pi/2
+						mx,my=lxo+mr*c(mq),lyo-mr*s(mq)
+					else
+						mx,my=MTS(o.x,o.y,zoom,w,h,l[j].x,l[j].y)
+					end
+					sC(0,a,0,delT-(tick-l[j].t));drCF(mx,my,0.7)
+				end
+			end
+		end
+	end
+end'>
+					<pos x="1.25" y="-3.75"/>
+					<in1 component_id="38"/>
+					<in2 component_id="146" node_index="1"/>
+				</object>
+			</c>
+			<c type="10">
+				<object id="159" e="atan2(sin((x-y)*pi2),cos((x-y)*pi2))/pi2">
+					<pos x="1.25" y="-5.5"/>
+					<in1 component_id="39"/>
+					<in2 component_id="158"/>
+				</object>
+			</c>
+			<c type="23">
+				<object id="160">
+					<pos x="2.5" y="-5.5"/>
+					<in1 component_id="159"/>
+					<in3 component_id="42"/>
+					<kp text="8" value="8"/>
+					<ki text="0.1" value="0.1"/>
+					<kd text="0"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="161" l="Angle Error">
+					<pos x="2.5" y="-6.25"/>
+					<in1 component_id="159"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="2">
+				<object id="2">
+					<pos x="-2.5" y="-1.75"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="4">
+					<pos x="-2.5" y="-2.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="6">
+					<pos x="-2.5" y="-2.75"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="10">
+					<pos x="-3.75" y="-3"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="11">
+					<pos x="-3.75" y="-2.5"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="12">
+					<pos x="-3.75" y="-2"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="16">
+					<pos x="-3.75" y="-4.75"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="17">
+					<pos x="-3.75" y="-4.25"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="18">
+					<pos x="-3.75" y="-5.25"/>
+				</object>
+			</c>
+			<c type="3">
+				<object id="24">
+					<pos x="2.5" y="-2.25"/>
+					<in1 component_id="160"/>
+				</object>
+			</c>
+			<c type="3">
+				<object id="25">
+					<pos x="2.5" y="-2.75"/>
+					<in1 component_id="93"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="27">
+					<pos x="-3.75" y="-3.75"/>
+				</object>
+			</c>
+			<c type="5">
+				<object id="35">
+					<pos x="1.25" y="-1.75"/>
+					<in1 component_id="32"/>
+				</object>
+			</c>
+			<c type="4">
+				<object id="37">
+					<pos x="-5" y="-9.25"/>
+				</object>
+			</c>
+			<c>
+				<object id="42">
+					<pos x="-6.25" y="-2"/>
+				</object>
+			</c>
+			<c type="7">
+				<object id="51">
+					<pos x="1.25" y="-4.25"/>
+					<in1 component_id="154" node_index="1"/>
+				</object>
+			</c>
+			<c type="4">
+				<object id="110">
+					<pos x="-14" y="-8"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="158">
+					<pos y="-5.25"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="32" script='dM,dR=2,10
+lostT,srs,trs=0,1,1
+tm,twx,twy,twz,yaw=0,0,0,0,0,0
+yawO={}
+dtm,dtwx,dtwy,dtwz=0,0,0,0
+dtcx,dtcy,dtcz=0,0,0
+tsqz=0
+TRm=0
+
+inB=input.getBool
+inN=input.getNumber
+ouB=output.setBool
+ouN=output.setNumber
+m=math
+pi=m.pi
+pi2=2*pi
+s=m.sin
+c=m.cos
+t=m.tan
+as=m.asin
+at=m.atan
+abs=m.abs
+f4="%4.0f"
+sc=screen
+drT=sc.drawText
+
+function sgn(x)
+	return x/abs(x)
+end
+function len2(x,y)
+	return (x^2+y^2)^0.5
+end
+function len3(x,y,z)
+	return (x^2+y^2+z^2)^0.5
+end
+function drTf(x,y,txt,fmt)
+	return drawText(x,y,string.format(fmt,txt))
+end
+function angDif1(a,b)
+	a,b=a*pi2,b*pi2
+	return at(s(a-b),c(a-b))/pi2
+end
+function angFix(a)
+	return (a+0.5)%1-0.5
+end
+function SphToRec(r,qx,qz)
+	x=r*c(qx)*s(qz)
+	y=r*c(qx)*c(qz)
+	z=r*s(qx)
+return x,y,z
+end
+function LocalToWorld(xl,yl,zl,qx,qy,qz,xlw,ylw,zlw)
+	qx,qz=as(s(qx)/c(qy)),qz-at(t(qx)*t(qy))
+	xw=xlw+c(qz)*c(qy)*xl-(s(qz)*c(qx)+c(qz)*s(qy)*s(qx))*yl+(s(qz)*s(qx)-c(qz)*s(qy)*c(qx))*zl
+	yw=ylw+s(qz)*c(qy)*xl+(c(qz)*c(qx)-s(qz)*s(qy)*s(qx))*yl-(c(qz)*s(qx)+s(qz)*s(qy)*c(qx))*zl
+	zw=zlw+s(qy)*xl+c(qy)*s(qx)*yl+c(qy)*c(qx)*zl
+return xw,yw,zw
+end
+function CalcWrldCrd(sr,sqx,sqz,rqx,rqy,rqz,xlw,ylw,zlw)
+	xl,yl,zl=SphToRec(sr,sqx,sqz)
+	xw,yw,zw=LocalToWorld(xl,yl,zl,rqx,rqy,rqz,xlw,ylw,zlw)
+return xw,yw,zw
+end
+function RecToSph(x,y,z)
+	xy=len2(x,y)
+	r=len2(xy,z)
+	qx=at(z,xy)
+	qz=at(x,y)
+return r,qx,qz
+end
+function WorldToLocal(xw,yw,zw,qx,qy,qz,xlw,ylw,zlw)
+	qx,qz=as(s(qx)/c(qy)),qz-at(t(qx)*t(qy))
+	xr,yr,zr=xw-xlw,yw-ylw,zw-zlw
+	xl=c(qz)*c(qy)*xr-s(qz)*c(qy)*yr+s(qy)*zr
+	yl=(s(qz)*c(qx)+c(qz)*s(qy)*s(qx))*xr+(c(qz)*c(qx)-s(qz)*s(qy)*s(qx))*yr-c(qy)*s(qx)*zr
+	zl=(s(qz)*s(qx)-c(qz)*s(qy)*c(qx))*xr+(c(qz)*s(qx)+s(qz)*s(qy)*c(qx))*yr+c(qy)*c(qx)*zr
+return xl,yl,zl
+end
+function CalcLclCrd(xw,yw,zw,rqx,rqy,rqz,xlw,ylw,zlw)
+	xl,yl,zl=WorldToLocal(xw,yw,zw,rqx,rqy,rqz,xlw,ylw,zlw)
+	sr,sqx,sqz=RecToSph(xl,yl,zl)
+	return sr,sqx,sqz,xl,yl,zl
+end
+function pnpn(x,xMax,dx,sign)
+	x=x+sign*dx
+	if abs(x)&gt;xMax then
+		x=sgn(x)*xMax
+		sign=-sign
+	end
+	return x,sign
+end
+function RadYawS(yw)
+	if rng==1 then
+		yw=yw+rpt*1
+	else
+		yw,srs=pnpn(yw,rng/2,2*rpt*rng,srs)
+	end
+	return angFix(yw)
+end
+function RadYawT(yw,yw0)
+	TRrng=at(10/tsr)/pi2+lostT/10*fov
+	dyw=angDif1(yw,yw0)
+	if abs(dyw)&gt;TRrng then
+		yw=yw0
+	else
+		dyw,trs=pnpn(dyw,TRrng,fov/2,trs)
+		yw=dyw+yw0
+	end
+	return angFix(yw)
+end
+function tiltFix(q,v)
+	return q-m.min(0,sgn(v))*(sgn(q)/2-2*q)
+end
+
+function onTick()
+act=inB(1)
+isSR,isTR=inB(2),inB(3)
+table.insert(yawO,1,yaw)
+yawO[5]=nil
+if act and yawO[4]~=nil then
+	owx,owy,owz=inN(1)+inN(7),inN(2)+inN(8),inN(3)+inN(9)
+	com,elv,dst=inN(10)*pi2,inN(11)*pi2,inN(12)
+	tm=dst*inN(13)
+	vt=inN(6)
+	pit,rol=tiltFix(inN(4),vt)*pi2,tiltFix(inN(5),vt)*pi2
+	mR,mM=inN(18),inN(19)
+	if dst&gt;mR and tm&gt;mM then
+		twx,twy,twz=CalcWrldCrd(dst,elv,yawO[4]*pi2,pit,-rol,com,owx,owy,owz)
+	else
+		tm,twx,twy,twz=0,0,0,0
+	end
+
+	rps,dir,rng,fov=inN(21),inN(22),inN(23)/360,inN(24)
+	rpt=rps/60
+
+	TRm=inN(29)
+	Msgn=1
+	if isTR and TRm&gt;0 then
+		Msgn=-1
+	end
+
+	if Msgn==-1 and abs(TRm-tm)&lt;dM and len3(TRwx-twx,TRwy-twy,TRwz-twz)&lt;dR then
+		TRwx,TRwy,TRwz=twx,twy,twz
+		lostT=0
+	else
+		TRwx,TRwy,TRwz=inN(30),inN(31),inN(32)
+		lostT=lostT+1
+	end
+
+	if TRm&gt;0 and isTR then
+		tsr,tsqx,tsqz,tcx,tcy,tcz=CalcLclCrd(TRwx,TRwy,TRwz,-pit,rol,-com,owx,owy,owz)
+		tsqx,tsqz=tsqx/pi2,tsqz/pi2
+		yaw=RadYawT(yaw,tsqz)
+	elseif isSR then
+		tcr,tcqx,tcqz=1,0,0
+		yaw=RadYawS(yaw)
+	end
+else
+	tm,Msgn,yaw=0,1,0
+	srs,trs=1,1
+end
+ouN(1,tm*Msgn)
+ouN(2,twx)
+ouN(3,twy)
+ouN(4,twz)
+ouN(5,tsr)
+ouN(6,tsqx)
+ouN(7,tsqz)
+ouN(11,yaw)
+ouB(1,true)
+ouB(2,isSR)
+ouB(3,isTR)
+end
+
+function onDraw()
+w=sc.getWidth()
+h=sc.getHeight()
+sc.setColor(0,255,0)
+sc.drawLine(w/2,h/2,w/2+w*c((-yaw+1/4)*pi2),h/2-w*s((-yaw+1/4)*pi2))
+drT(1,8,"tm  "..dtm)
+drT(1,56,"twx "..dtwx)
+drT(1,64,"twy "..dtwy)
+drT(1,72,"twz "..dtwz)
+drT(1,80,"lostt"..lostT)
+if tm&gt;10 then
+	sc.setColor(255,0,0)
+	drT(1,1,"detect")
+	dtm,dtwx,dtwy,dtwz=tm,twx,twy,twz
+end
+if TRm&gt;10 then
+	dtcx,dtcy,dtcz=tcx,tcy,tcz
+	drT(1,24,"tcx "..dtcx)
+	drT(1,32,"tcy "..dtcy)
+	drT(1,40,"tcz "..dtcz)
+end
+end'>
+				<pos y="-2"/>
+				<in1 component_id="38"/>
+			</c0>
+			<c1 id="38">
+				<pos x="-1.25" y="-9.75"/>
+				<inc component_id="41"/>
+				<in1 component_id="2"/>
+				<in2 component_id="4"/>
+				<in3 component_id="6"/>
+				<in4 component_id="12"/>
+				<in5 component_id="11"/>
+				<in6 component_id="10"/>
+				<in7 component_id="149"/>
+				<in8 component_id="150"/>
+				<in9 component_id="151"/>
+				<in10 component_id="27"/>
+				<in11 component_id="17"/>
+				<in12 component_id="16"/>
+				<in13 component_id="18"/>
+				<in14 component_id="39"/>
+				<in15/>
+				<in16/>
+				<in17/>
+				<in18 component_id="152"/>
+				<in19 component_id="153"/>
+				<in20 component_id="118"/>
+				<in21 component_id="95"/>
+				<in22 component_id="97"/>
+				<in23 component_id="48"/>
+				<in24 component_id="93"/>
+				<in25 component_id="101"/>
+				<in26 component_id="102"/>
+				<in27 component_id="103"/>
+				<in28 component_id="104"/>
+				<in29 component_id="80"/>
+				<in30 component_id="81"/>
+				<in31 component_id="82"/>
+				<in32 component_id="83"/>
+			</c1>
+			<c2 id="39" i="10">
+				<pos x="1.25" y="-2.25"/>
+				<in1 component_id="32"/>
+			</c2>
+			<c3 id="41" count="10">
+				<pos x="-5" y="-4.25"/>
+				<in1 component_id="42"/>
+				<in2 component_id="54"/>
+				<in3 component_id="55"/>
+				<in4 component_id="139"/>
+				<in5 component_id="140"/>
+				<in6 component_id="106"/>
+				<in7 component_id="107"/>
+				<in8 component_id="144"/>
+				<in9/>
+				<in10/>
+			</c3>
+			<c4 id="48" name="Radar scan range (deg)">
+				<pos x="-2.5" y="-7.5"/>
+				<min text="30" value="30"/>
+				<max text="360" value="360"/>
+				<int text="30" value="30"/>
+				<v text="360" value="360"/>
+			</c4>
+			<c5 id="54">
+				<pos x="-6.25" y="-2.5"/>
+				<in1 component_id="96"/>
+				<min text="0"/>
+				<max text="1" value="1"/>
+			</c5>
+			<c6 id="55">
+				<pos x="-6.25" y="-3"/>
+				<in1 component_id="96"/>
+				<min text="0"/>
+				<max text="-1" value="-1"/>
+			</c6>
+			<c7 id="80">
+				<pos x="-3.75" y="-8.25"/>
+				<in1 component_id="37"/>
+			</c7>
+			<c8 id="81" i="1">
+				<pos x="-3.75" y="-8.75"/>
+				<in1 component_id="37"/>
+			</c8>
+			<c9 id="82" i="2">
+				<pos x="-3.75" y="-9.25"/>
+				<in1 component_id="37"/>
+			</c9>
+			<c10 id="83" i="3">
+				<pos x="-3.75" y="-9.75"/>
+				<in1 component_id="37"/>
+			</c10>
+			<c11 id="93" e="ceil(x/60*100)/100">
+				<pos x="-2.5" y="-8"/>
+				<in1 component_id="95"/>
+			</c11>
+			<c12 id="95" name="Radar RPS">
+				<pos x="-2.5" y="-6.5"/>
+				<min text="0.5" value="0.5"/>
+				<max text="7.5" value="7.5"/>
+				<int text="0.1" value="0.1"/>
+				<v text="0.5" value="0.5"/>
+			</c12>
+			<c13 id="96" name="Radar type" v="1">
+				<pos x="-7.5" y="-2.75"/>
+				<items>
+					<i l="Search Radar">
+						<v text="1" value="1"/>
+					</i>
+					<i l="Targeting Radar">
+						<v text="-1" value="-1"/>
+					</i>
+					<i l="Dual Use">
+						<v text="0"/>
+					</i>
+				</items>
+			</c13>
+			<c14 id="97" name="Radar arrow direction from top view" v="1">
+				<pos x="-2.5" y="-7"/>
+				<items>
+					<i l="Clockwise">
+						<v text="1" value="1"/>
+					</i>
+					<i l="Counter Clockwise">
+						<v text="-1" value="-1"/>
+					</i>
+				</items>
+			</c14>
+			<c15 id="101">
+				<pos x="-3.75" y="-6"/>
+				<in1 component_id="32"/>
+			</c15>
+			<c16 id="102" i="1">
+				<pos x="-3.75" y="-6.5"/>
+				<in1 component_id="32"/>
+			</c16>
+			<c17 id="103" i="2">
+				<pos x="-3.75" y="-7"/>
+				<in1 component_id="32"/>
+			</c17>
+			<c18 id="104" i="3">
+				<pos x="-3.75" y="-7.5"/>
+				<in1 component_id="32"/>
+			</c18>
+			<c19 id="105" name="Target map style" v="2" i="2">
+				<pos x="-7.5" y="-3.75"/>
+				<items>
+					<i l="Disable">
+						<v text="0"/>
+					</i>
+					<i l="Local map orthogonal">
+						<v text="1" value="1"/>
+					</i>
+					<i l="Local map polar">
+						<v text="2" value="2"/>
+					</i>
+					<i l="World map">
+						<v text="3" value="3"/>
+					</i>
+				</items>
+			</c19>
+			<c20 id="106">
+				<pos x="-6.25" y="-3.5"/>
+				<in1 component_id="105"/>
+				<min text="1" value="1"/>
+				<max text="3" value="3"/>
+			</c20>
+			<c21 id="107">
+				<pos x="-6.25" y="-4"/>
+				<in1 component_id="105"/>
+				<min text="1" value="1"/>
+				<max text="2" value="2"/>
+			</c21>
+			<c22 id="111" n="Display range 1 (m)">
+				<pos x="-7.75" y="-5.75"/>
+				<v text="500" value="500"/>
+			</c22>
+			<c23 id="112" n="Display range 2 (m)">
+				<pos x="-7.75" y="-6.25"/>
+				<v text="1000" value="1000"/>
+			</c23>
+			<c24 id="113" n="Display range 3 (m)">
+				<pos x="-7.75" y="-6.75"/>
+				<v text="2500" value="2500"/>
+			</c24>
+			<c25 id="114" n="Display range 4 (m)">
+				<pos x="-7.75" y="-7.25"/>
+				<v text="0"/>
+			</c25>
+			<c26 id="115">
+				<pos x="-12.75" y="-8"/>
+				<in1 component_id="110"/>
+			</c26>
+			<c27 id="116">
+				<pos x="-11.5" y="-8"/>
+				<in1 component_id="115"/>
+			</c27>
+			<c28 id="117">
+				<pos x="-10.25" y="-8.5"/>
+				<in1 component_id="116"/>
+				<r text="0"/>
+				<i text="1" value="1"/>
+				<min text="0"/>
+				<max text="0"/>
+			</c28>
+			<c29 id="118">
+				<pos x="-6.5" y="-6.25"/>
+				<in1 component_id="111"/>
+				<in2 component_id="119"/>
+				<in3 component_id="122"/>
+			</c29>
+			<c30 id="119">
+				<pos x="-6.5" y="-7.25"/>
+				<in1 component_id="112"/>
+				<in2 component_id="120"/>
+				<in3 component_id="123"/>
+			</c30>
+			<c31 id="120">
+				<pos x="-6.5" y="-8.25"/>
+				<in1 component_id="113"/>
+				<in2 component_id="121"/>
+				<in3 component_id="124"/>
+			</c31>
+			<c32 id="121">
+				<pos x="-6.5" y="-9.25"/>
+				<in1 component_id="114"/>
+				<in2 component_id="118"/>
+				<in3 component_id="125"/>
+			</c32>
+			<c33 id="122">
+				<pos x="-7.75" y="-8.25"/>
+				<in1 component_id="138"/>
+				<min text="0"/>
+				<max text="0"/>
+			</c33>
+			<c34 id="123">
+				<pos x="-7.75" y="-8.75"/>
+				<in1 component_id="138"/>
+				<min text="1" value="1"/>
+				<max text="1" value="1"/>
+			</c34>
+			<c35 id="124">
+				<pos x="-7.75" y="-9.25"/>
+				<in1 component_id="138"/>
+				<min text="2" value="2"/>
+				<max text="2" value="2"/>
+			</c35>
+			<c36 id="125">
+				<pos x="-7.75" y="-9.75"/>
+				<in1 component_id="138"/>
+				<min text="3" value="3"/>
+				<max text="3" value="3"/>
+			</c36>
+			<c37 id="127">
+				<pos x="-7.75" y="-7.75"/>
+				<n text="100" value="100"/>
+			</c37>
+			<c38 id="128">
+				<pos x="-11.5" y="-9.75"/>
+				<in1 component_id="111"/>
+			</c38>
+			<c39 id="129">
+				<pos x="-11.5" y="-10.75"/>
+				<in1 component_id="112"/>
+			</c39>
+			<c40 id="130">
+				<pos x="-11.5" y="-11.75"/>
+				<in1 component_id="113"/>
+			</c40>
+			<c41 id="131">
+				<pos x="-11.5" y="-12.75"/>
+				<in1 component_id="114"/>
+			</c41>
+			<c42 id="133">
+				<pos x="-10.25" y="-9.75"/>
+				<in1 component_id="137"/>
+				<in3 component_id="128"/>
+			</c42>
+			<c43 id="134">
+				<pos x="-10.25" y="-10.75"/>
+				<in1 component_id="137"/>
+				<in3 component_id="129"/>
+			</c43>
+			<c44 id="135">
+				<pos x="-10.25" y="-11.75"/>
+				<in1 component_id="137"/>
+				<in3 component_id="130"/>
+			</c44>
+			<c45 id="136">
+				<pos x="-10.25" y="-12.75"/>
+				<in1 component_id="137"/>
+				<in3 component_id="131"/>
+			</c45>
+			<c46 id="137">
+				<pos x="-11.5" y="-9"/>
+				<n text="1" value="1"/>
+			</c46>
+			<c47 id="138" e="x%max(1,(a+b+c+d))">
+				<pos x="-9" y="-9.75"/>
+				<in1 component_id="117"/>
+				<in5 component_id="133"/>
+				<in6 component_id="134"/>
+				<in7 component_id="135"/>
+				<in8 component_id="136"/>
+			</c47>
+			<c48 id="139" n="Show display range" v="true">
+				<pos x="-8.75" y="-3.25"/>
+			</c48>
+			<c49 id="140" n="Show compass (Local map)">
+				<pos x="-8.75" y="-3.75"/>
+			</c49>
+			<c50 id="144">
+				<pos x="-6.25" y="-4.5"/>
+				<in1 component_id="105"/>
+				<min text="1" value="1"/>
+				<max text="1" value="1"/>
+			</c50>
+			<c51 id="146" script="tick=0
+t,l,o={},{},{}
+zoom,scr=1,0.1
+Mmin=25
+dM,dR=2,100
+delT=450
+tID,N=101,32
+divNm,dq=6,10/360
+divq=1/8
+a,b=255,127
+inB=input.getBool;inN=input.getNumber;ouB=output.setBool;ouN=output.setNumber
+tI=table.insert;tR=table.remove
+m=math
+pi=m.pi
+pi2=2*pi
+s=m.sin
+c=m.cos
+as=m.asin
+at=m.atan
+abs=m.abs
+sc=screen
+sC=sc.setColor
+drT=sc.drawText
+drL=sc.drawLine
+drC=sc.drawCircle
+drCF=sc.drawCircleF
+drTF=sc.drawTriangleF
+MTS=map.mapToScreen
+
+function len3(x,y,z)
+	return (x^2+y^2+z^2)^0.5
+end
+
+function drA(x0,y0,r,q,qa,dN,fill)
+	for j=-1,1,2 do
+		dqi=j*qa/dN
+		for i=1,dN/2 do
+			qi1=q-dqi*i
+			qi2=qi1+dqi
+			x1,y1,x2,y2=x0+r*c(qi1),y0-r*s(qi1),x0+r*c(qi2),y0-r*s(qi2)
+			if fill then
+				drTF(x0,y0,x1,y1,x2,y2)
+			else
+				drL(x1,y1,x2,y2)
+			end
+		end
+	end
+end
+
+function angDifp(a,b)
+	return at(s(a-b),c(a-b))
+end
+
+function onTick()
+	act,map,lcl,orth=inB(1),inB(6),inB(7),inB(8)
+	if map then
+		yaw=inN(14)*pi2
+		o.x,o.y,o.z,o.com=inN(1)+inN(7),inN(2)+inN(8),inN(3)+inN(9),inN(10)*pi2
+		rng,fov,dRng=inN(23)/360,inN(24),inN(20)
+		dr,cm=inB(4),inB(5)
+	end
+end
+
+function onDraw()
+w=sc.getWidth()
+h=sc.getHeight()
+w=w-1
+
+	if map then
+		if lcl then
+			if orth then
+				scw,sch,lxo,lyo=w/(rng*pi2),h/dRng,w/2,h
+				lr,lq0=dRng*sch,0;lq=lq0-yaw
+			else
+				if rng&gt;0.5 then
+					scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+				else
+					scr,lxo,lyo=m.min(h/dRng,w/(2*dRng*s(rng*pi))),w/2,h
+				end
+				lr,lq0=dRng*scr,pi/2;lq=lq0-yaw
+			end
+		else
+			scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+			zoom=w/scr/10^3
+			sc.setMapColorLand(70,70,70);sc.setMapColorGrass(25,40,25);sc.drawMap(o.x,o.y,zoom)
+			lr,lq0=dRng*scr,pi/2+o.com;lq=lq0-yaw
+		end
+
+		sC(63,a,63,b)
+		if rng&gt;divq then
+			dlq=divq*pi2
+			for i=1,rng/2/divq do
+			for j=-1,1,2 do
+				lqi=lq0-j*i*dlq
+				if orth then
+					lqi=lqi*scw+lxo
+					drL(lqi,0,lqi,lyo)
+				elseif not (rng==1 and i==rng/2/divq and j==1) then
+					drL(lxo,lyo,lxo+lr*c(lqi),lyo-lr*s(lqi))
+				end
+			end
+			end
+		end
+		if orth then
+			drL(0,h/2,w,h/2)
+			sC(63,a,63,195);drL(lxo,0,lxo,lyo)
+		else
+			divN=m.ceil(m.ceil(m.max(divNm,rng/dq))/2)*2
+			drL(lxo,lyo,lxo+lr*c(lq0),lyo-lr*s(lq0))
+			drA(lxo,lyo,lr/2,lq0,rng*pi2,divN,false)
+		end
+
+		sC(31,a,31,b)
+		if act then
+			if orth then
+				for j=-1,1 do
+					lxl,lxw=lxo+(-lq+j*pi2-fov*pi)*scw,fov*pi2*scw
+					sc.drawRectF(lxl,0,lxw,lyo)
+				end
+			else
+				drA(lxo,lyo,lr,lq,fov*pi2,6,true)
+			end
+		end
+
+		sC(0,a,0)
+		if orth then
+			sc.drawRect(0,0,w-0,h-1)
+		else
+			drA(lxo,lyo,lr,lq0,rng*pi2,divN,false)
+			if rng&lt;1 then
+				for j=-1,1,2 do
+					lqe=lq0-j*rng*pi
+					drL(lxo,lyo,lxo+lr*c(lqe),lyo-lr*s(lqe))
+				end
+			end
+		end
+
+		if lcl and cm then
+			for i=-1,1,2 do
+				if orth then
+					if i==1 then sC(15,15,a,b) else sC(a,15,15,b) end
+					cq=angDifp(o.com+i*pi/2+pi/2,0)*scw
+					drL(lxo+cq,1,lxo+cq,lyo-1)
+				else
+					if i==1 then sC(15,15,a) else sC(a,15,15) end
+					cq=-o.com-i*pi/2
+					tq=pi/32
+					drTF(lxo+(lr-2)*c(cq),lyo-(lr-2)*s(cq),lxo+(lr+2)*c(cq+tq),lyo-(lr+2)*s(cq+tq),lxo+(lr+2)*c(cq-tq),lyo-(lr+2)*s(cq-tq))
+				end
+			end
+		end
+	end
+end">
+				<pos y="-3.75"/>
+				<in1 component_id="38"/>
+			</c51>
+			<c52 id="149" n="Radar right offset from GPS X (m)">
+				<pos x="-2.5" y="-3.5"/>
+				<v text="-0.5" value="-0.5"/>
+			</c52>
+			<c53 id="150" n="Radar front offset from GPS Y (m)">
+				<pos x="-2.5" y="-4"/>
+				<v text="0.5" value="0.5"/>
+			</c53>
+			<c54 id="151" n="Radar up offset from Altimeter (m)">
+				<pos x="-2.5" y="-4.5"/>
+				<v text="1.5" value="1.5"/>
+			</c54>
+			<c55 id="152" n="Minimum detect range (m)">
+				<pos x="-2.5" y="-5.5"/>
+				<v text="25" value="25"/>
+			</c55>
+			<c56 id="153" n="Minimum detect mass (kg)">
+				<pos x="-2.5" y="-6"/>
+				<v text="10" value="10"/>
+			</c56>
+			<c57 id="154" script='tick=0
+t,l,o={},{},{}
+zoom,scr=1,0.1
+Mmin=25
+dM,dR=2,100
+delT=450
+tID,N=101,32
+divNm,dq=6,10/360
+divq=1/8
+a,b=255,127
+inB=input.getBool;inN=input.getNumber;ouB=output.setBool;ouN=output.setNumber
+tI=table.insert;tR=table.remove
+m=math
+pi=m.pi
+pi2=2*pi
+s=m.sin
+c=m.cos
+as=m.asin
+at=m.atan
+abs=m.abs
+sc=screen
+sC=sc.setColor
+drT=sc.drawText
+drL=sc.drawLine
+drC=sc.drawCircle
+drCF=sc.drawCircleF
+MTS=map.mapToScreen
+
+function len3(x,y,z)
+	return (x^2+y^2+z^2)^0.5
+end
+
+function reg()
+	p=0;ow=false
+	t.m=abs(t.m)
+	if #l==0 then
+		p=1
+	elseif #l&lt;N or t.m-l[#l].m&gt;-dM then
+		for j=1,#l do
+			dmi=t.m-l[j].m
+			if abs(dmi)&lt;=dM and len3(t.x-l[j].x,t.y-l[j].y,t.z-l[j].z)&lt;dR then
+				p=j;ow=true;break
+			elseif dmi&gt;dM then
+				p=j;break
+			elseif j==#l and #l&lt;N then
+				p=j+1;break
+			end
+		end
+	end
+	if p&gt;0 then
+		if ow then
+			if t.t-l[p].t&gt;3 then
+				XO,YO,ZO,TO=l[p].x,l[p].y,l[p].z,l[p].t
+			else
+			XO,YO,ZO,TO=l[p].xO,l[p].yO,l[p].zO,l[p].tO
+			end
+			N,V=l[p].n,l[p].v
+			tR(l,p)
+		else
+			N,V,XO,YO,ZO,TO=tID,nil,nil,nil,nil,nil
+			tID=tID+1
+		end
+		tI(l,p,{m=t.m,x=t.x,y=t.y,z=t.z,t=t.t,n=N,v=V,xO=XO,yO=YO,zO=ZO,tO=TO})
+		if #l&gt;N then
+		tR(l,#l)
+		end
+	end
+end
+function angDifp(a,b)
+	return at(s(a-b),c(a-b))
+end
+
+function drA(x0,y0,r,q,qa,dN,fill)
+	for j=-1,1,2 do
+		dqi=j*qa/dN
+		for i=1,dN/2 do
+			qi1=q-dqi*i
+			qi2=qi1+dqi
+			x1,y1,x2,y2=x0+r*c(qi1),y0-r*s(qi1),x0+r*c(qi2),y0-r*s(qi2)
+			if fill then
+				sc.drawTriangleF(x0,y0,x1,y1,x2,y2)
+			else
+				drL(x1,y1,x2,y2)
+			end
+		end
+	end
+end
+
+function onTick()
+	act,map,lcl,orth=inB(1),inB(6),inB(7),inB(8)
+	if map then
+		yaw=inN(14)*pi2
+		o.x,o.y,o.z,o.com=inN(1)+inN(7),inN(2)+inN(8),inN(3)+inN(9),inN(10)*pi2
+		rng,fov,dRng=inN(23)/360,inN(24),inN(20)
+		dr,cm=inB(4),inB(5)
+	end
+	if act and map then
+		t.m,t.x,t.y,t.z,t.t=inN(25),inN(26),inN(27),inN(28),tick
+		if abs(t.m)&gt;=Mmin then
+			reg()
+		end
+		if #l&gt;0 then
+			for j=1,#l do
+				if l[j]~=nil and tick-l[j].t&gt;delT then
+					for k=j,#l-1 do
+						l[k]=l[k+1]
+					end
+					tR(l,#l)
+				end
+			end
+		end
+		tick=tick+1
+	else
+		tick=0
+	end
+end
+
+function onDraw()
+w=sc.getWidth()
+h=sc.getHeight()
+
+	if map then
+		if lcl then
+			if orth then
+				scw,sch,lxo,lyo=w/(rng*pi2),h/dRng,w/2,h
+				lr,lq=dRng*sch,rng*scw
+			else
+				if rng&gt;0.5 then
+					scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+				else
+					scr,lxo,lyo=m.min(h/dRng,w/(2*dRng*s(rng*pi))),w/2,h
+				end
+				lr,lq=dRng*scr,pi/2-yaw
+			end
+		else
+			scr,lxo,lyo=m.min(w,h)/(2*dRng),w/2,h/2
+			zoom=w/scr/10^3
+			lr,lq=dRng*scr,pi/2+o.com-yaw
+		end
+
+sC(a,a,a,b)
+		if dr then drT(2,2,"R"..string.format("%d",dRng)) end
+
+sC(0,a,0)
+		if act and #l&gt;0 then
+			for j=1,#l do
+				dwx,dwy=l[j].x-o.x,l[j].y-o.y
+				R2,Q=len3(dwx,dwy,0),angDifp(at(dwy,dwx),pi/2+o.com)
+				if R2&lt;dRng then
+					if lcl and orth then
+						mr,mq=R2*sch,-Q*scw
+						mx,my=w/2+mq,h-mr
+					elseif lcl then
+						mr,mq=R2*scr,Q+pi/2
+						mx,my=lxo+mr*c(mq),lyo-mr*s(mq)
+					else
+						mx,my=MTS(o.x,o.y,zoom,w,h,l[j].x,l[j].y)
+					end
+					sC(0,a,0,delT-(tick-l[j].t));drCF(mx,my,0.7)
+				end
+			end
+		end
+	end
+end'>
+				<pos x="1.25" y="-3.75"/>
+				<in1 component_id="38"/>
+				<in2 component_id="146" node_index="1"/>
+			</c57>
+			<c58 id="159" e="atan2(sin((x-y)*pi2),cos((x-y)*pi2))/pi2">
+				<pos x="1.25" y="-5.5"/>
+				<in1 component_id="39"/>
+				<in2 component_id="158"/>
+			</c58>
+			<c59 id="160">
+				<pos x="2.5" y="-5.5"/>
+				<in1 component_id="159"/>
+				<in3 component_id="42"/>
+				<kp text="8" value="8"/>
+				<ki text="0.1" value="0.1"/>
+				<kd text="0"/>
+			</c59>
+			<c60 id="161" l="Angle Error">
+				<pos x="2.5" y="-6.25"/>
+				<in1 component_id="159"/>
+			</c60>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="-2.5" y="-1.75"/>
+			</c0>
+			<c1 id="4">
+				<pos x="-2.5" y="-2.25"/>
+			</c1>
+			<c2 id="6">
+				<pos x="-2.5" y="-2.75"/>
+			</c2>
+			<c3 id="10">
+				<pos x="-3.75" y="-3"/>
+			</c3>
+			<c4 id="11">
+				<pos x="-3.75" y="-2.5"/>
+			</c4>
+			<c5 id="12">
+				<pos x="-3.75" y="-2"/>
+			</c5>
+			<c6 id="16">
+				<pos x="-3.75" y="-4.75"/>
+			</c6>
+			<c7 id="17">
+				<pos x="-3.75" y="-4.25"/>
+			</c7>
+			<c8 id="18">
+				<pos x="-3.75" y="-5.25"/>
+			</c8>
+			<c9 id="24">
+				<pos x="2.5" y="-2.25"/>
+				<in1 component_id="160"/>
+			</c9>
+			<c10 id="25">
+				<pos x="2.5" y="-2.75"/>
+				<in1 component_id="93"/>
+			</c10>
+			<c11 id="27">
+				<pos x="-3.75" y="-3.75"/>
+			</c11>
+			<c12 id="35">
+				<pos x="1.25" y="-1.75"/>
+				<in1 component_id="32"/>
+			</c12>
+			<c13 id="37">
+				<pos x="-5" y="-9.25"/>
+			</c13>
+			<c14 id="42">
+				<pos x="-6.25" y="-2"/>
+			</c14>
+			<c15 id="51">
+				<pos x="1.25" y="-4.25"/>
+				<in1 component_id="154" node_index="1"/>
+			</c15>
+			<c16 id="110">
+				<pos x="-14" y="-8"/>
+			</c16>
+			<c17 id="158">
+				<pos y="-5.25"/>
+			</c17>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

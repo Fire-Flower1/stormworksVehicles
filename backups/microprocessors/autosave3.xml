@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Microcontroller" description="No description set." width="3" length="2" id_counter="15" id_counter_node="5">
+	<nodes>
+		<n id="1" component_id="1">
+			<node label="Trigger" mode="1" description="The input signal to be processed."/>
+		</n>
+		<n id="2" component_id="3">
+			<node label="Start feeder" description="The input signal to be processed.">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="3" component_id="5">
+			<node label="open breach" description="The input signal to be processed.">
+				<position x="1" z="1"/>
+			</node>
+		</n>
+		<n id="4" component_id="7">
+			<node label="fire" description="The input signal to be processed.">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="5" component_id="8">
+			<node label="round in chamber" mode="1" description="The input signal to be processed.">
+				<position z="1"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="56">
+				<object id="9" script="output.setNumber(1, value = 1)
+-- Tick function that will be executed every logic tick
+function onTick()
+	value = input.getNumber(1)			 -- Read the first number from the script's composite input
+	if (value == 1)
+		output.setNumber(1, value = 0)
+end">
+					<pos x="-0.5" y="-0.25"/>
+					<in1 component_id="10"/>
+				</object>
+			</c>
+			<c type="41">
+				<object id="10" count="1">
+					<pos x="-1.75" y="-0.25"/>
+					<in1 component_id="8"/>
+				</object>
+			</c>
+			<c type="28">
+				<object id="11">
+					<pos x="-1.75" y="1.25"/>
+					<in1 component_id="12"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="12">
+					<pos x="0.75" y="-0.25"/>
+					<in1 component_id="9"/>
+				</object>
+			</c>
+			<c type="49">
+				<object id="14">
+					<pos x="2" y="-0.5"/>
+					<in1 component_id="12"/>
+					<in2 component_id="15"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="15" n="timer duration">
+					<pos x="0.25" y="-1"/>
+					<v text="1" value="1"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c>
+				<object id="1">
+					<pos x="-3.25" y="0.25"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="3">
+					<pos x="-1.75" y="-1"/>
+					<in1 component_id="1"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="5">
+					<pos x="-0.25" y="1"/>
+					<in1 component_id="11"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="7">
+					<pos x="1.25" y="0.75"/>
+					<in1 component_id="14"/>
+				</object>
+			</c>
+			<c>
+				<object id="8">
+					<pos x="-3.25" y="-1"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="9" script="output.setNumber(1, value = 1)
+-- Tick function that will be executed every logic tick
+function onTick()
+	value = input.getNumber(1)			 -- Read the first number from the script's composite input
+	if (value == 1)
+		output.setNumber(1, value = 0)
+end">
+				<pos x="-0.5" y="-0.25"/>
+				<in1 component_id="10"/>
+			</c0>
+			<c1 id="10" count="1">
+				<pos x="-1.75" y="-0.25"/>
+				<in1 component_id="8"/>
+			</c1>
+			<c2 id="11">
+				<pos x="-1.75" y="1.25"/>
+				<in1 component_id="12"/>
+			</c2>
+			<c3 id="12">
+				<pos x="0.75" y="-0.25"/>
+				<in1 component_id="9"/>
+			</c3>
+			<c4 id="14">
+				<pos x="2" y="-0.5"/>
+				<in1 component_id="12"/>
+				<in2 component_id="15"/>
+			</c4>
+			<c5 id="15" n="timer duration">
+				<pos x="0.25" y="-1"/>
+				<v text="1" value="1"/>
+			</c5>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="1">
+				<pos x="-3.25" y="0.25"/>
+			</c0>
+			<c1 id="3">
+				<pos x="-1.75" y="-1"/>
+				<in1 component_id="1"/>
+			</c1>
+			<c2 id="5">
+				<pos x="-0.25" y="1"/>
+				<in1 component_id="11"/>
+			</c2>
+			<c3 id="7">
+				<pos x="1.25" y="0.75"/>
+				<in1 component_id="14"/>
+			</c3>
+			<c4 id="8">
+				<pos x="-3.25" y="-1"/>
+			</c4>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

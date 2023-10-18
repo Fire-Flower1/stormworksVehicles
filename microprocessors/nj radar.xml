@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="NJ Advanced Radar/Sonar" description="No description set." width="2" length="3" id_counter="130" id_counter_node="15" sym0="960" sym1="3120" sym2="4104" sym3="8460" sym4="16402" sym5="16418" sym6="32833" sym7="34945" sym8="32769" sym9="32769" sym10="16418" sym11="16386" sym12="9220" sym13="4104" sym14="3120" sym15="960">
+	<nodes>
+		<n id="6" component_id="43">
+			<node label="Video Screen" type="6" description="Connect to display">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="7" component_id="124">
+			<node label="Radar Data" mode="1" type="5" description="Connect to Radar Target Detected">
+				<position x="1" z="1"/>
+			</node>
+		</n>
+		<n id="11" component_id="73">
+			<node label="Composite Panel" mode="1" type="5" description="Connect to Panel to Control Radar">
+				<position x="1" z="2"/>
+			</node>
+		</n>
+		<n id="12" component_id="91">
+			<node label="Radar On/Off" description="Connect to Radar and Relay">
+				<position z="2"/>
+			</node>
+		</n>
+		<n id="13" component_id="105">
+			<node label="Target Found" description="Connect to Buzzer"/>
+		</n>
+		<n id="15" component_id="123">
+			<node label="Radar Rotation" mode="1" type="1" description="The input signal to be processed.">
+				<position z="1"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data type="151587341">
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="56">
+				<object id="44" script='targets = {} --creates table to store radar targets
+targetstime = {} 
+pi = math.pi --shorthand for math.pi
+
+
+function onTick()
+	
+	BR = property.getNumber("BackroundR")
+	BG = property.getNumber("BackroundG")
+	BB = property.getNumber("BackroundB")
+	TR = property.getNumber("TextR")
+	TG = property.getNumber("TextG")
+	TB = property.getNumber("TextB")
+	TGTR = property.getNumber("TargetR")
+	TGTG = property.getNumber("TargetG")
+	TGTB = property.getNumber("TargetB")	
+	
+	w = input.getNumber(2) --user defined screen width
+	h = input.getNumber(3) --user defined screen hieght
+	r = h/2 --screen radius
+	c1 = (r/5)*1 --screen radius
+	c2 = (r/5)*2 --screen radius
+	c3 = (r/5)*3 --screen radius
+	c4 = (r/5)*4 --screen radius
+	
+	t = input.getBool(11) --target is detected
+	d = input.getNumber(6) --distane of target
+	rg = input.getNumber(7) --desired radar range
+	dad = (d/rg)*r --distance/max*radius
+	on = input.getBool(1) --radar on or off
+	rdrspd = (100 - input.getNumber(10)) * 6
+	
+	radarrot = input.getNumber(8) --radar rotation
+	
+	if on then --only turns and detects if radar is on
+		
+		angrdr = radarrot*6.2832
+	
+		x1 = w/2 + r * math.cos(angrdr-1.5708) --finds point to draw radar that rotates
+		y1 = h/2 + r * math.sin(angrdr-1.5708)
+		
+		x10 = w/2 + r * math.cos(angrdr-1.74533) --finds point to draw radar that rotates (Shadow 1)
+		y10 = h/2 + r * math.sin(angrdr-1.74533)
+		
+		x11 = w/2 + r * math.cos(angrdr-1.91986) --finds point to draw radar that rotates (Shadow 2)
+		y11 = h/2 + r * math.sin(angrdr-1.91986)		
+		
+		
+		x3 = w/2 + dad * math.cos(angrdr-1.5708) --finds point to draw radar target
+		y3 = h/2 + dad * math.sin(angrdr-1.5708)
+	
+		if t then --adds targets to table for each target found
+			if d &lt;= rg then
+			time = 0
+			targets[x3] = y3 --stores x and y points in table
+			targetstime[x3] = time --stores x and y points in table
+			end
+		end
+		
+		for x3,time in pairs(targetstime) do
+		targetstime[x3] = time + 1
+		if time &gt;= rdrspd then
+		targets[x3] = nil
+		targetstime[x3] = nil
+		end
+		end
+	
+	end
+end
+
+
+function onDraw()
+	
+	screen.setColor(BR, BG, BB)
+	screen.drawClear()
+	
+	screen.setColor(TR, TG, TB) --sets screen color to green			
+	screen.drawCircle(w/2, h/2, r) --draws a outside circle the size of the screen
+	screen.setColor(TR, TG, TB, 30) --sets screen color to green
+	screen.drawCircle(w/2, h/2, c1) --draws a circle 1 the size of the screen
+	screen.drawCircle(w/2, h/2, c2) --draws a circle 2 the size of the screen
+	screen.drawCircle(w/2, h/2, c3) --draws a circle 3 the size of the screen
+	screen.drawCircle(w/2, h/2, c4) --draws a circle 4 the size of the screen
+	
+	screen.drawLine(w/2-r, h/2, w/2+r, h/2) --draws the line left to right
+	screen.drawLine(w/2, h/2-r, w/2, h/2+r) --draws the line top to bottom
+	
+	
+	
+	screen.setColor(TR, TG, TB) --sets screen color to green
+	screen.drawTextBox(1, 1, 20, 8, string.format("%#0d",rg), -1, -1) --displays the max range of radar
+	screen.drawLine(w/2, h/2, x1, y1) --draws the line of radar that rotates
+	
+	screen.setColor(TR, TG, TB, 150) --sets screen color to green (Shadow 1)
+	screen.drawTriangleF(w/2, h/2, x10, y10, x1, y1) --draws the line of radar that rotates
+	
+	screen.setColor(TR, TG, TB, 100) --sets screen color to green (Shadow 2)
+	screen.drawTriangleF(w/2, h/2, x10, y10, x11, y11) --draws the line of radar that rotates
+	
+
+	for x4, y4 in pairs(targets) do --reads the table of targets
+		screen.setColor(TGTR, TGTG, TGTB) --sets the screen color to red
+		screen.drawCircleF(x4,y4,1) --draws a dot/circle at target location on radar
+	end
+end'>
+					<pos x="1" y="1.25"/>
+					<in1 component_id="46"/>
+				</object>
+			</c>
+			<c type="40">
+				<object id="46" count="10">
+					<pos x="-0.25" y="-1"/>
+					<inc component_id="48"/>
+					<in1/>
+					<in2 component_id="117"/>
+					<in3 component_id="118"/>
+					<in4/>
+					<in5/>
+					<in6 component_id="125"/>
+					<in7 component_id="84"/>
+					<in8 component_id="123"/>
+					<in9/>
+					<in10 component_id="130"/>
+				</object>
+			</c>
+			<c type="41">
+				<object id="48" count="11">
+					<pos x="-1.5" y="-1.75"/>
+					<in1 component_id="92"/>
+					<in2/>
+					<in3/>
+					<in4/>
+					<in5/>
+					<in6/>
+					<in7/>
+					<in8/>
+					<in9/>
+					<in10/>
+					<in11 component_id="103"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="82" i="1">
+					<pos x="-7" y="3.75"/>
+					<in1 component_id="73"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="83" i="2">
+					<pos x="-7" y="3.25"/>
+					<in1 component_id="73"/>
+				</object>
+			</c>
+			<c type="37">
+				<object id="84" m="1">
+					<pos x="-4" y="3.25"/>
+					<in1 component_id="85"/>
+					<in2 component_id="86"/>
+					<r text="50" value="50"/>
+					<i text="50" value="50"/>
+					<min text="50" value="50"/>
+					<max text="5000" value="5000"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="85">
+					<pos x="-5.5" y="3.75"/>
+					<in1 component_id="82"/>
+				</object>
+			</c>
+			<c type="48">
+				<object id="86">
+					<pos x="-5.5" y="3.25"/>
+					<in1 component_id="83"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="92">
+					<pos x="-7" y="2.75"/>
+					<in1 component_id="73"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="100" n="Minimum Target Range (Meters)">
+					<pos x="-4.5" y="-0.75"/>
+					<v text="5" value="5"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="103">
+					<pos x="-3" y="-2"/>
+					<in1 component_id="106"/>
+					<in2 component_id="129"/>
+				</object>
+			</c>
+			<c type="17">
+				<object id="106">
+					<pos x="-3" y="-1.25"/>
+					<in1 component_id="125"/>
+					<in2 component_id="100"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="111" n="BackroundR">
+					<pos x="-8" y="0.25"/>
+					<v text="5" value="5"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="112" n="BackroundG">
+					<pos x="-8" y="-0.25"/>
+					<v text="5" value="5"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="113" n="BackroundB">
+					<pos x="-8" y="-0.75"/>
+					<v text="5" value="5"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="114" n="TextR">
+					<pos x="-8" y="-1.5"/>
+					<v text="0"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="115" n="TextG">
+					<pos x="-8" y="-2"/>
+					<v text="255" value="255"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="116" n="TextB">
+					<pos x="-8" y="-2.5"/>
+					<v text="0"/>
+				</object>
+			</c>
+			<c type="19">
+				<object id="117" name="Screen Width">
+					<pos x="-8" y="-3.5"/>
+					<min text="32" value="32"/>
+					<max text="224" value="224"/>
+					<int text="32" value="32"/>
+					<v text="64" value="64"/>
+				</object>
+			</c>
+			<c type="19">
+				<object id="118" name="Screen Height">
+					<pos x="-8" y="-4"/>
+					<min text="32" value="32"/>
+					<max text="224" value="224"/>
+					<int text="32" value="32"/>
+					<v text="64" value="64"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="119" n="TargetR">
+					<pos x="-9.5" y="0.25"/>
+					<v text="255" value="255"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="120" n="TargetG">
+					<pos x="-9.5" y="-0.25"/>
+					<v text="0"/>
+				</object>
+			</c>
+			<c type="34">
+				<object id="121" n="TargetB">
+					<pos x="-9.5" y="-0.75"/>
+					<v text="0"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="125">
+					<pos x="-3.5" y="-3.5"/>
+					<in1 component_id="124"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="126" i="1">
+					<pos x="-3.5" y="-4"/>
+					<in1 component_id="124"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="127" i="2">
+					<pos x="-3.5" y="-4.5"/>
+					<in1 component_id="124"/>
+				</object>
+			</c>
+			<c type="31">
+				<object id="128" i="3">
+					<pos x="-3.5" y="-5"/>
+					<in1 component_id="124"/>
+				</object>
+			</c>
+			<c type="29">
+				<object id="129">
+					<pos x="-3.5" y="-3"/>
+					<in1 component_id="124"/>
+				</object>
+			</c>
+			<c type="19">
+				<object id="130" name="Radar Speed %">
+					<pos x="1.25" y="-4"/>
+					<min text="0"/>
+					<max text="100" value="100"/>
+					<int text="1" value="1"/>
+					<v text="50" value="50"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="7">
+				<object id="43">
+					<pos x="2.25" y="1.25"/>
+					<in1 component_id="44" node_index="1"/>
+				</object>
+			</c>
+			<c type="4">
+				<object id="73">
+					<pos x="-8.75" y="3.75"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="91">
+					<pos x="-4" y="2.75"/>
+					<in1 component_id="92"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="105">
+					<pos x="-1.5" y="-2.25"/>
+					<in1 component_id="103"/>
+				</object>
+			</c>
+			<c type="2">
+				<object id="123">
+					<pos x="-4.5" y="0.75"/>
+				</object>
+			</c>
+			<c type="4">
+				<object id="124">
+					<pos x="-4.75" y="-3"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="44" script='targets = {} --creates table to store radar targets
+targetstime = {} 
+pi = math.pi --shorthand for math.pi
+
+
+function onTick()
+	
+	BR = property.getNumber("BackroundR")
+	BG = property.getNumber("BackroundG")
+	BB = property.getNumber("BackroundB")
+	TR = property.getNumber("TextR")
+	TG = property.getNumber("TextG")
+	TB = property.getNumber("TextB")
+	TGTR = property.getNumber("TargetR")
+	TGTG = property.getNumber("TargetG")
+	TGTB = property.getNumber("TargetB")	
+	
+	w = input.getNumber(2) --user defined screen width
+	h = input.getNumber(3) --user defined screen hieght
+	r = h/2 --screen radius
+	c1 = (r/5)*1 --screen radius
+	c2 = (r/5)*2 --screen radius
+	c3 = (r/5)*3 --screen radius
+	c4 = (r/5)*4 --screen radius
+	
+	t = input.getBool(11) --target is detected
+	d = input.getNumber(6) --distane of target
+	rg = input.getNumber(7) --desired radar range
+	dad = (d/rg)*r --distance/max*radius
+	on = input.getBool(1) --radar on or off
+	rdrspd = (100 - input.getNumber(10)) * 6
+	
+	radarrot = input.getNumber(8) --radar rotation
+	
+	if on then --only turns and detects if radar is on
+		
+		angrdr = radarrot*6.2832
+	
+		x1 = w/2 + r * math.cos(angrdr-1.5708) --finds point to draw radar that rotates
+		y1 = h/2 + r * math.sin(angrdr-1.5708)
+		
+		x10 = w/2 + r * math.cos(angrdr-1.74533) --finds point to draw radar that rotates (Shadow 1)
+		y10 = h/2 + r * math.sin(angrdr-1.74533)
+		
+		x11 = w/2 + r * math.cos(angrdr-1.91986) --finds point to draw radar that rotates (Shadow 2)
+		y11 = h/2 + r * math.sin(angrdr-1.91986)		
+		
+		
+		x3 = w/2 + dad * math.cos(angrdr-1.5708) --finds point to draw radar target
+		y3 = h/2 + dad * math.sin(angrdr-1.5708)
+	
+		if t then --adds targets to table for each target found
+			if d &lt;= rg then
+			time = 0
+			targets[x3] = y3 --stores x and y points in table
+			targetstime[x3] = time --stores x and y points in table
+			end
+		end
+		
+		for x3,time in pairs(targetstime) do
+		targetstime[x3] = time + 1
+		if time &gt;= rdrspd then
+		targets[x3] = nil
+		targetstime[x3] = nil
+		end
+		end
+	
+	end
+end
+
+
+function onDraw()
+	
+	screen.setColor(BR, BG, BB)
+	screen.drawClear()
+	
+	screen.setColor(TR, TG, TB) --sets screen color to green			
+	screen.drawCircle(w/2, h/2, r) --draws a outside circle the size of the screen
+	screen.setColor(TR, TG, TB, 30) --sets screen color to green
+	screen.drawCircle(w/2, h/2, c1) --draws a circle 1 the size of the screen
+	screen.drawCircle(w/2, h/2, c2) --draws a circle 2 the size of the screen
+	screen.drawCircle(w/2, h/2, c3) --draws a circle 3 the size of the screen
+	screen.drawCircle(w/2, h/2, c4) --draws a circle 4 the size of the screen
+	
+	screen.drawLine(w/2-r, h/2, w/2+r, h/2) --draws the line left to right
+	screen.drawLine(w/2, h/2-r, w/2, h/2+r) --draws the line top to bottom
+	
+	
+	
+	screen.setColor(TR, TG, TB) --sets screen color to green
+	screen.drawTextBox(1, 1, 20, 8, string.format("%#0d",rg), -1, -1) --displays the max range of radar
+	screen.drawLine(w/2, h/2, x1, y1) --draws the line of radar that rotates
+	
+	screen.setColor(TR, TG, TB, 150) --sets screen color to green (Shadow 1)
+	screen.drawTriangleF(w/2, h/2, x10, y10, x1, y1) --draws the line of radar that rotates
+	
+	screen.setColor(TR, TG, TB, 100) --sets screen color to green (Shadow 2)
+	screen.drawTriangleF(w/2, h/2, x10, y10, x11, y11) --draws the line of radar that rotates
+	
+
+	for x4, y4 in pairs(targets) do --reads the table of targets
+		screen.setColor(TGTR, TGTG, TGTB) --sets the screen color to red
+		screen.drawCircleF(x4,y4,1) --draws a dot/circle at target location on radar
+	end
+end'>
+				<pos x="1" y="1.25"/>
+				<in1 component_id="46"/>
+			</c0>
+			<c1 id="46" count="10">
+				<pos x="-0.25" y="-1"/>
+				<inc component_id="48"/>
+				<in1/>
+				<in2 component_id="117"/>
+				<in3 component_id="118"/>
+				<in4/>
+				<in5/>
+				<in6 component_id="125"/>
+				<in7 component_id="84"/>
+				<in8 component_id="123"/>
+				<in9/>
+				<in10 component_id="130"/>
+			</c1>
+			<c2 id="48" count="11">
+				<pos x="-1.5" y="-1.75"/>
+				<in1 component_id="92"/>
+				<in2/>
+				<in3/>
+				<in4/>
+				<in5/>
+				<in6/>
+				<in7/>
+				<in8/>
+				<in9/>
+				<in10/>
+				<in11 component_id="103"/>
+			</c2>
+			<c3 id="82" i="1">
+				<pos x="-7" y="3.75"/>
+				<in1 component_id="73"/>
+			</c3>
+			<c4 id="83" i="2">
+				<pos x="-7" y="3.25"/>
+				<in1 component_id="73"/>
+			</c4>
+			<c5 id="84" m="1">
+				<pos x="-4" y="3.25"/>
+				<in1 component_id="85"/>
+				<in2 component_id="86"/>
+				<r text="50" value="50"/>
+				<i text="50" value="50"/>
+				<min text="50" value="50"/>
+				<max text="5000" value="5000"/>
+			</c5>
+			<c6 id="85">
+				<pos x="-5.5" y="3.75"/>
+				<in1 component_id="82"/>
+			</c6>
+			<c7 id="86">
+				<pos x="-5.5" y="3.25"/>
+				<in1 component_id="83"/>
+			</c7>
+			<c8 id="92">
+				<pos x="-7" y="2.75"/>
+				<in1 component_id="73"/>
+			</c8>
+			<c9 id="100" n="Minimum Target Range (Meters)">
+				<pos x="-4.5" y="-0.75"/>
+				<v text="5" value="5"/>
+			</c9>
+			<c10 id="103">
+				<pos x="-3" y="-2"/>
+				<in1 component_id="106"/>
+				<in2 component_id="129"/>
+			</c10>
+			<c11 id="106">
+				<pos x="-3" y="-1.25"/>
+				<in1 component_id="125"/>
+				<in2 component_id="100"/>
+			</c11>
+			<c12 id="111" n="BackroundR">
+				<pos x="-8" y="0.25"/>
+				<v text="5" value="5"/>
+			</c12>
+			<c13 id="112" n="BackroundG">
+				<pos x="-8" y="-0.25"/>
+				<v text="5" value="5"/>
+			</c13>
+			<c14 id="113" n="BackroundB">
+				<pos x="-8" y="-0.75"/>
+				<v text="5" value="5"/>
+			</c14>
+			<c15 id="114" n="TextR">
+				<pos x="-8" y="-1.5"/>
+				<v text="0"/>
+			</c15>
+			<c16 id="115" n="TextG">
+				<pos x="-8" y="-2"/>
+				<v text="255" value="255"/>
+			</c16>
+			<c17 id="116" n="TextB">
+				<pos x="-8" y="-2.5"/>
+				<v text="0"/>
+			</c17>
+			<c18 id="117" name="Screen Width">
+				<pos x="-8" y="-3.5"/>
+				<min text="32" value="32"/>
+				<max text="224" value="224"/>
+				<int text="32" value="32"/>
+				<v text="64" value="64"/>
+			</c18>
+			<c19 id="118" name="Screen Height">
+				<pos x="-8" y="-4"/>
+				<min text="32" value="32"/>
+				<max text="224" value="224"/>
+				<int text="32" value="32"/>
+				<v text="64" value="64"/>
+			</c19>
+			<c20 id="119" n="TargetR">
+				<pos x="-9.5" y="0.25"/>
+				<v text="255" value="255"/>
+			</c20>
+			<c21 id="120" n="TargetG">
+				<pos x="-9.5" y="-0.25"/>
+				<v text="0"/>
+			</c21>
+			<c22 id="121" n="TargetB">
+				<pos x="-9.5" y="-0.75"/>
+				<v text="0"/>
+			</c22>
+			<c23 id="125">
+				<pos x="-3.5" y="-3.5"/>
+				<in1 component_id="124"/>
+			</c23>
+			<c24 id="126" i="1">
+				<pos x="-3.5" y="-4"/>
+				<in1 component_id="124"/>
+			</c24>
+			<c25 id="127" i="2">
+				<pos x="-3.5" y="-4.5"/>
+				<in1 component_id="124"/>
+			</c25>
+			<c26 id="128" i="3">
+				<pos x="-3.5" y="-5"/>
+				<in1 component_id="124"/>
+			</c26>
+			<c27 id="129">
+				<pos x="-3.5" y="-3"/>
+				<in1 component_id="124"/>
+			</c27>
+			<c28 id="130" name="Radar Speed %">
+				<pos x="1.25" y="-4"/>
+				<min text="0"/>
+				<max text="100" value="100"/>
+				<int text="1" value="1"/>
+				<v text="50" value="50"/>
+			</c28>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="43">
+				<pos x="2.25" y="1.25"/>
+				<in1 component_id="44" node_index="1"/>
+			</c0>
+			<c1 id="73">
+				<pos x="-8.75" y="3.75"/>
+			</c1>
+			<c2 id="91">
+				<pos x="-4" y="2.75"/>
+				<in1 component_id="92"/>
+			</c2>
+			<c3 id="105">
+				<pos x="-1.5" y="-2.25"/>
+				<in1 component_id="103"/>
+			</c3>
+			<c4 id="123">
+				<pos x="-4.5" y="0.75"/>
+			</c4>
+			<c5 id="124">
+				<pos x="-4.75" y="-3"/>
+			</c5>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

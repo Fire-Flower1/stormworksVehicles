@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Meltdown Controller" description="No description set." width="2" length="2" id_counter="14" id_counter_node="3">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="Assembly Temp" mode="1" type="1" description="The input signal to be processed."/>
+		</n>
+		<n id="2" component_id="3">
+			<node label="Self Destruct" mode="1" description="The input signal to be processed.">
+				<position x="1"/>
+			</node>
+		</n>
+		<n id="3" component_id="6">
+			<node label="Insertion Target" type="1" description="The input signal to be processed.">
+				<position z="1"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="22">
+				<object id="7">
+					<pos x="-2.25" y="-0.5"/>
+					<in1 component_id="14"/>
+					<in2 component_id="11"/>
+					<in3 component_id="3"/>
+				</object>
+			</c>
+			<c type="18">
+				<object id="9">
+					<pos x="-5" y="1"/>
+					<in1 component_id="2"/>
+					<in2 component_id="10"/>
+				</object>
+			</c>
+			<c type="15">
+				<object id="10">
+					<pos x="-6.25" y="1"/>
+					<n text="1300" value="1300"/>
+				</object>
+			</c>
+			<c type="22">
+				<object id="11">
+					<pos x="-2.5" y="1.5"/>
+					<in1 component_id="13"/>
+					<in2 component_id="12"/>
+					<in3 component_id="9"/>
+				</object>
+			</c>
+			<c type="15">
+				<object id="12">
+					<pos x="-4.75" y="2"/>
+					<n text="0.1" value="0.1"/>
+				</object>
+			</c>
+			<c type="15">
+				<object id="13">
+					<pos x="-4.75" y="2.5"/>
+					<n text="0"/>
+				</object>
+			</c>
+			<c type="15">
+				<object id="14">
+					<pos x="-6.5"/>
+					<n text="0"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="2">
+				<object id="2">
+					<pos x="-7.25" y="1.25"/>
+				</object>
+			</c>
+			<c>
+				<object id="3">
+					<pos x="-4.25" y="-1"/>
+				</object>
+			</c>
+			<c type="3">
+				<object id="6">
+					<pos x="0.25" y="-1"/>
+					<in1 component_id="7"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="7">
+				<pos x="-2.25" y="-0.5"/>
+				<in1 component_id="14"/>
+				<in2 component_id="11"/>
+				<in3 component_id="3"/>
+			</c0>
+			<c1 id="9">
+				<pos x="-5" y="1"/>
+				<in1 component_id="2"/>
+				<in2 component_id="10"/>
+			</c1>
+			<c2 id="10">
+				<pos x="-6.25" y="1"/>
+				<n text="1300" value="1300"/>
+			</c2>
+			<c3 id="11">
+				<pos x="-2.5" y="1.5"/>
+				<in1 component_id="13"/>
+				<in2 component_id="12"/>
+				<in3 component_id="9"/>
+			</c3>
+			<c4 id="12">
+				<pos x="-4.75" y="2"/>
+				<n text="0.1" value="0.1"/>
+			</c4>
+			<c5 id="13">
+				<pos x="-4.75" y="2.5"/>
+				<n text="0"/>
+			</c5>
+			<c6 id="14">
+				<pos x="-6.5"/>
+				<n text="0"/>
+			</c6>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="-7.25" y="1.25"/>
+			</c0>
+			<c1 id="3">
+				<pos x="-4.25" y="-1"/>
+			</c1>
+			<c2 id="6">
+				<pos x="0.25" y="-1"/>
+				<in1 component_id="7"/>
+			</c2>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+

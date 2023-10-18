@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Microcontroller" description="No description set." width="3" length="1" id_counter="9" id_counter_node="3" sym1="128" sym2="448" sym3="672" sym4="128" sym6="128" sym7="128" sym8="448" sym9="128" sym10="128" sym12="128" sym13="672" sym14="448" sym15="128">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="Seat" mode="1" type="5" description="The input signal to be processed."/>
+		</n>
+		<n id="2" component_id="5">
+			<node label="up" description="The input signal to be processed.">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="3" component_id="6">
+			<node label="down" description="The input signal to be processed.">
+				<position x="1"/>
+			</node>
+		</n>
+	</nodes>
+	<group>
+		<data type="-512819306">
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="31">
+				<object id="7" i="1">
+					<pos x="-1"/>
+					<in1 component_id="2"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="8">
+					<in1 component_id="7"/>
+					<min text="1" value="1"/>
+					<max text="1" value="1"/>
+				</object>
+			</c>
+			<c type="12">
+				<object id="9">
+					<pos y="-0.5"/>
+					<in1 component_id="7"/>
+					<min text="-1" value="-1"/>
+					<max text="-1" value="-1"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="4">
+				<object id="2">
+					<pos x="-2"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="5">
+					<pos x="1" y="-0.5"/>
+					<in1 component_id="8"/>
+				</object>
+			</c>
+			<c type="1">
+				<object id="6">
+					<pos x="1"/>
+					<in1 component_id="9"/>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="7" i="1">
+				<pos x="-1"/>
+				<in1 component_id="2"/>
+			</c0>
+			<c1 id="8">
+				<in1 component_id="7"/>
+				<min text="1" value="1"/>
+				<max text="1" value="1"/>
+			</c1>
+			<c2 id="9">
+				<pos y="-0.5"/>
+				<in1 component_id="7"/>
+				<min text="-1" value="-1"/>
+				<max text="-1" value="-1"/>
+			</c2>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="-2"/>
+			</c0>
+			<c1 id="5">
+				<pos x="1" y="-0.5"/>
+				<in1 component_id="8"/>
+			</c1>
+			<c2 id="6">
+				<pos x="1"/>
+				<in1 component_id="9"/>
+			</c2>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+
