@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="RDR001" description="Microcontroller for RADAR 001" width="3" length="2" id_counter="6" id_counter_node="2">
+	<nodes>
+		<n id="1" component_id="3">
+			<node label="Display" type="6" description="The input signal to be processed.">
+				<position x="2"/>
+			</node>
+		</n>
+		<n id="2" component_id="6">
+			<node label="Radar Comp In" mode="1" type="5" description="The input signal to be processed."/>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="56">
+				<object id="4" script="-- Tick function that will be executed every logic tick
+function onTick()
+	x1= (32 + 30) * math.cos(-1.58)
+	y1= (32 + 30) * math.sin(-1.58)
+	
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+	w = screen.getWidth()				  -- Get the screen's width and height
+	h = screen.getHeight()					
+	screen.setColor(0, 200, 0)			 -- Set draw color to green
+	screen.drawCircle(w / 2, h / 2, 30)   -- Draw a 30px radius circle in the center of the screen
+	screen.drawLine(w/2, h/2, x1, y1)
+end">
+					<pos x="-2.5" y="0.25"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="7">
+				<object id="3">
+					<in1 component_id="4" node_index="1"/>
+				</object>
+			</c>
+			<c type="4">
+				<object id="6"/>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="4" script="-- Tick function that will be executed every logic tick
+function onTick()
+	x1= (32 + 30) * math.cos(-1.58)
+	y1= (32 + 30) * math.sin(-1.58)
+	
+end
+
+-- Draw function that will be executed when this script renders to a screen
+function onDraw()
+	w = screen.getWidth()				  -- Get the screen's width and height
+	h = screen.getHeight()					
+	screen.setColor(0, 200, 0)			 -- Set draw color to green
+	screen.drawCircle(w / 2, h / 2, 30)   -- Draw a 30px radius circle in the center of the screen
+	screen.drawLine(w/2, h/2, x1, y1)
+end">
+				<pos x="-2.5" y="0.25"/>
+			</c0>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="3">
+				<in1 component_id="4" node_index="1"/>
+			</c0>
+			<c1 id="6"/>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+
